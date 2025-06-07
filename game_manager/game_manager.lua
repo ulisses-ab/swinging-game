@@ -1,11 +1,11 @@
 local Scene = require("Scene")
 local persistance = require("persistance")
 local editor_mode = require("editor.editor_mode")
-local starting_menu = require("manager.starting_menu")
-local official_levels_list = require("manager.official_levels_list")
-local my_levels_list = require("manager.my_levels_list")
-local GameplayOverlay = require("manager.GameplayOverlay")
-local EditorOverlay = require("manager.EditorOverlay")
+local starting_menu = require("game_manager.starting_menu")
+local official_levels_list = require("game_manager.official_levels_list")
+local my_levels_list = require("game_manager.my_levels_list")
+local GameplayOverlay = require("game_manager.GameplayOverlay")
+local EditorOverlay = require("game_manager.EditorOverlay")
 
 local game_manager = {
     current_scene = nil,

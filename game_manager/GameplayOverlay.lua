@@ -3,7 +3,7 @@ local TextBox = require("game_objects.TextBox")
 local Scene = require("Scene")
 local Vec2 = require("Vec2")
 local persistance = require("persistance")
-local paused = require("manager.paused")
+local paused = require("game_manager.paused")
 local util = require("util")
 
 local GameplayOverlay = {}

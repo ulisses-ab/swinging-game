@@ -1,6 +1,6 @@
-local GameplayOverlay = require("manager.GameplayOverlay")
+local GameplayOverlay = require("game_manager.GameplayOverlay")
 local editor_mode = require("editor.editor_mode")
-local editor_gui = require("manager.editor_gui")
+local editor_gui = require("game_manager.editor_gui")
 local Platform = require("game_objects.Platform")
 local Pivot = require("game_objects.Pivot")
 local Slingshot = require("game_objects.Slingshot")
@@ -41,11 +41,8 @@ function EditorOverlay:update(dt)
     self.countdown = -1
 end
 
-local amount = 0
-
 function EditorOverlay:draw()
     love.graphics.push()
-    love.graphics.translate(amount, 0)
     GameplayOverlay.draw(self, dt)
     editor_mode:draw()
 
@@ -54,15 +51,6 @@ function EditorOverlay:draw()
 end
 
 function EditorOverlay:keypressed(key)
-    if key == "o" then
-        amount = amount + 10
-    elseif key == "p" then
-        amount = amount - 10
-    elseif key == "u" then 
-        util.scale = util.scale + 0.1
-    elseif key == "y" then
-        util.scale = util.scale - 0.1
-    end
     GameplayOverlay.keypressed(self, key)
     editor_mode:keypressed(key)
     self.gui:keypressed(key)
