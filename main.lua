@@ -4,7 +4,7 @@ local Button = require("game_objects.Button")
 local Vec2 = require("Vec2")
 local persistance = require("persistance")
 local editor_mode = require("editor.editor_mode")
-local game_manager = require("manager.game_manager")
+local game_manager = require("game_manager.game_manager")
 local sounds = require("sounds")
 
 util.scale = 0.75
