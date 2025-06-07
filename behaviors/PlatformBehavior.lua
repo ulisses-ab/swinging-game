@@ -2,9 +2,12 @@ local util = require("util")
 local Vec2 = require("Vec2")
 local GameObject = require("game_objects.GameObject")
 local util = require("util")
+local sounds = require("sounds")
 
 local PlatformBehavior = {}
 PlatformBehavior.__index = PlatformBehavior
+
+PlatformBehavior.fall_sound = sounds.platform_fall
 
 function PlatformBehavior:new(owner)
     local obj = {
@@ -40,6 +43,9 @@ function PlatformBehavior:set_platform(platform)
     if self.on_land then
         self.on_land()
     end
+
+    self.fall_sound:stop()
+    self.fall_sound:play()
 end
 
 function PlatformBehavior:reset_platform()

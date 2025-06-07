@@ -40,11 +40,11 @@ function Platform:draw()
     local fade_iterations = 4
      
     for i = 0, fade_iterations do
-        local shade = 1 - (i / fade_iterations)
-        love.graphics.setColor(shade, shade, shade)
+        local alpha = 1 - (i / fade_iterations)
+        love.graphics.setColor(1, 1, 1, alpha)
         love.graphics.rectangle("fill", self.position.x - self.width/2, self.position.y - self.height/2 + (self.height / fade_iterations) * i, self.width, self.height / fade_iterations)
     end
-    love.graphics.setColor(1, 1, 1)
+    love.graphics.setColor(1, 1, 1, 1)
 end
 
 function Platform:is_above(point, margin)

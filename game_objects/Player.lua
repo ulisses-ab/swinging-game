@@ -6,12 +6,30 @@ local SlingshotBehavior = require("behaviors.SlingshotBehavior")
 local PlatformBehavior = require("behaviors.PlatformBehavior")
 local GunBehavior = require("behaviors.GunBehavior")
 local SwordBehavior = require("behaviors.SwordBehavior")
+local sounds = require("sounds")
 
 local Player = {}
 Player.__index = Player
 setmetatable(Player, GameObject)
 
 Player.type = "Player"
+
+local main_color = {
+    r = 1,
+    g = 0,
+    b = 1,
+}
+
+local jump_audio = sounds.jump
+
+local function draw_line(pos1, pos2) 
+    love.graphics.setColor(main_color.r, main_color.g, main_color.b)
+    love.graphics.line(
+        pos1.x, pos1.y,
+        pos2.x, pos2.y
+    )
+    love.graphics.setColor(1, 1, 1)
+end
 
 function Player:new(position)
     local obj = GameObject:new(position)
@@ -22,8 +40,8 @@ function Player:new(position)
 
     obj.acceleration = Vec2:new(0, 4000)
 
-    obj.pivot_behavior = PivotBehavior:new(obj)
-    obj.slingshot_behavior = SlingshotBehavior:new(obj)
+    obj.pivot_behavior = PivotBehavior:new(obj, draw_line)
+    obj.slingshot_behavior = SlingshotBehavior:new(obj, draw_line)
     obj.platform_behavior = PlatformBehavior:new(obj)
     obj.gun_behavior = GunBehavior:new(obj)
 
@@ -44,8 +62,8 @@ function Player:new(position)
     obj.trail.last = 0
     obj.trail.max_length = 100
 
-    obj.width = 30
-    obj.height = 30
+    obj.width = 25
+    obj.height = 25
 
     return setmetatable(obj, self)
 end
@@ -73,7 +91,46 @@ function Player:center_to_bottom_vec()
 end
 
 function Player:draw() 
+    love.graphics.setColor(main_color.r, main_color.g, main_color.b)
     GameObject.draw(self)
+
+    local sw, sh = love.graphics.getDimensions()
+
+    if self.position.y < 0 then
+        if self.position.x < 30 then
+            love.graphics.polygon('fill', 
+                60, 35,
+                35, 60,
+                30, 30
+            )
+        elseif self.position.x > sw-30 then
+            love.graphics.polygon('fill', 
+                sw-60, 35,
+                sw-35, 60,
+                sw-30, 30
+            )
+        else
+            love.graphics.polygon('fill', 
+                self.position.x - 15, 55,
+                self.position.x + 15, 55,
+                self.position.x, 30
+            )
+        end
+    elseif self.position.x < 0 then
+        love.graphics.polygon('fill', 
+            55, self.position.y - 15,
+            55, self.position.y + 15,
+            30, self.position.y
+        )
+    elseif self.position.x > sw then
+        love.graphics.polygon('fill', 
+            sw-55, self.position.y - 15,
+            sw-55, self.position.y + 15,
+            sw-30, self.position.y
+        )
+    end
+
+    love.graphics.setColor(1, 1, 1)
 
     self.pivot_behavior:draw()
     self.slingshot_behavior:draw()
@@ -130,6 +187,10 @@ function Player:apply_move_input(dt)
 
     local accel = 7000
     local stopping_threshold = 30
+
+    if down and self.velocity.y < 2 * self.MAX_MOVEMENT_VELOCITY then
+        --self.velocity.y = self.velocity.y + accel / 2 * dt
+    end
 
     if pivot_rope_is_extended and up ~= down then
         if up then
@@ -211,6 +272,8 @@ function Player:apply_move_input_when_rope_is_extended(dt)
 end
 
 function Player:jump()
+    jump_audio:stop()
+    jump_audio:play()
     self.can_jump = false
     self.velocity.y = -1640
     self.platform_behavior:reset_platform()
@@ -278,6 +341,7 @@ end
 
 function Player:set_platform(platform)
     if self.spacebar_buffer_timer > 0 then
+        self.platform_behavior.fall_sound:play()
         self:jump()
         return
     end

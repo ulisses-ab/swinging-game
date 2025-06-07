@@ -26,24 +26,26 @@ local function object_factory(data)
     return object_class:from_persistance_object(data)
 end
 
-function persistance.load_scene(filename)
+function persistance.scene_from_string(string)
     local scene = Scene:new()
-    local file = love.filesystem.read(filename)
-    if not file then
-        error("Could not read scene file: " .. filename)
-    end
+    
+    local compressed = love.data.decode("string", "base64", string)
+    local json_data = love.data.decompress("string", "zlib", compressed)
+    local data = json.decode(json_data)
 
-    local data = json.decode(file)
     for _, obj_data in ipairs(data.objects) do
         scene:add(object_factory(obj_data))
     end
 
+    scene.name = data.name or "unnamed scene"
+
     return scene
 end
 
-function persistance.save_scene(scene, filename) 
+function persistance.scene_to_string(scene)
     local scene_data = {
-        objects = {}
+        objects = {},
+        name = scene.name
     }
 
     for _, object in ipairs(scene.objects) do
@@ -53,8 +55,25 @@ function persistance.save_scene(scene, filename)
     end
 
     local json_data = json.encode(scene_data, { indent = true })
-    print(json_data)
-    love.filesystem.write(filename, json_data)
+    local compressed = love.data.compress("string", "zlib", json_data)
+    local encoded = love.data.encode("string", "base64", compressed)
+
+    return encoded
+end
+
+function persistance.load_scene(filename)
+    local file = love.filesystem.read(filename)
+    if not file then
+        error("Could not read scene file: " .. filename)
+    end
+
+    return persistance.scene_from_string(file)
+end
+
+function persistance.save_scene(scene, filename) 
+    local string = persistance.scene_to_string(scene)
+
+    love.filesystem.write(filename, string)
 end
 
 return persistance

@@ -1,15 +1,20 @@
 local util = require("util")
 local Vec2 = require("Vec2")
 local GameObject = require("game_objects.GameObject")
+local sounds = require("sounds")
 
 local SlingshotBehavior = {}
 SlingshotBehavior.__index = SlingshotBehavior
 
-function SlingshotBehavior:new(owner)
+
+local attach_sound = sounds.slingshot_attach
+
+function SlingshotBehavior:new(owner, draw_line)
     local obj = {
         owner = owner,
         near_slingshot = nil,
         attached_slingshot = nil,
+        draw_line = draw_line
     }
 
     obj.dampening_factor = 2
@@ -37,6 +42,9 @@ function SlingshotBehavior:try_attaching()
     self.attached_slingshot = self.near_slingshot
     self.owner:disable_acceleration()
     self.owner.velocity = Vec2:new(0, 0)
+
+    attach_sound:stop()
+    attach_sound:play()
 end
 
 function SlingshotBehavior:try_detaching()
@@ -69,10 +77,7 @@ function SlingshotBehavior:draw()
         return
     end
 
-    love.graphics.line(
-        self.owner.position.x, self.owner.position.y,
-        self.attached_slingshot.position.x, self.attached_slingshot.position.y
-    )
+    self.draw_line(self.owner.position, self.attached_slingshot.position)
 end
 
 

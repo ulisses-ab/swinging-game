@@ -1,16 +1,20 @@
 local util = require("util")
 local Vec2 = require("Vec2")
 local GameObject = require("game_objects.GameObject")
+local sounds = require("sounds")
 
 local PivotBehavior = {}
 PivotBehavior.__index = PivotBehavior
 
-function PivotBehavior:new(owner)
+local attach_sound = sounds.pivot_attach
+
+function PivotBehavior:new(owner, draw_line)
     local obj = {
         owner = owner,
         near_pivot = nil,
         attached_pivot = nil,
-        attachment_radius = 0
+        attachment_radius = 0,
+        draw_line = draw_line
     }
 
     return setmetatable(obj, self)
@@ -35,8 +39,11 @@ function PivotBehavior:try_attaching()
 
     local pivot_displacement = self.owner.position:sub(self.near_pivot.position)
 
-    self.attachment_radius = pivot_displacement:length()
+    self.attachment_radius = math.min(pivot_displacement:length(), self.near_pivot.range)
     self.attached_pivot = self.near_pivot
+
+    attach_sound:stop()
+    attach_sound:play()
 end
 
 function PivotBehavior:try_detaching()
@@ -119,10 +126,7 @@ function PivotBehavior:draw()
         return
     end
     
-    love.graphics.line(
-        self.owner.position.x, self.owner.position.y,
-        self.attached_pivot.position.x, self.attached_pivot.position.y
-    )
+    self.draw_line(self.owner.position, self.attached_pivot.position)
 end
 
 return PivotBehavior

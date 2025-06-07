@@ -4,13 +4,14 @@ local Bullet = require("game_objects.Bullet")
 local Scene = {}
 Scene.__index = Scene
 
-function Scene:new()
+function Scene:new(name)
     local obj = {
         objects = {},
         pivots = {},
         slingshots = {},
         platforms = {},
         players = {},
+        name = name or "unnamed scene"
     }
 
     return setmetatable(obj, Scene)

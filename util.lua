@@ -1,7 +1,8 @@
-local util = {}
+local util = {
+    scale = 1
+}
 
 local input = {
-    scale = 1,
     keys_down = setmetatable({}, {
         __index = function() return false end
     }),
@@ -22,13 +23,9 @@ function input:keyreleased(key)
     self.keys_down[key] = false
 end
 
-function input:set_scale(scale)
-    self.scale = scale
-end
-
 function input:get_mouse_position()
     local x, y = love.mouse.getPosition()
-    return x / self.scale, y / self.scale
+    return x / util.scale, y / util.scale
 end
 
 function input:mousepressed(x, y, button) 
@@ -82,6 +79,16 @@ function util.from_persistance_object(obj, class)
     return new_obj
 end
 
+function util.is_obj_in_array(array, object)
+    for i, obj in ipairs(array) do
+        if obj == object then
+            return true
+        end
+    end
+
+    return false
+end  
+
 function util.remove_obj_in_array(array, to_remove)
     for i, obj in ipairs(array) do
         if obj == to_remove then
@@ -106,6 +113,11 @@ function util.is_within_margin(pos, pos2, margin_x, margin_y)
 
     return pos.x >= pos2.x - margin_x and pos.x <= pos2.x + margin_x
         and pos.y >= pos2.y - margin_y and pos.y <= pos2.y + margin_y   
+end
+
+function util.get_dimensions()
+    local w, h = love.graphics.getDimensions()
+    return w / util.scale, h / util.scale
 end
 
 return util

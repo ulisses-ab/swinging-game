@@ -7,22 +7,21 @@ SelectionFrame.__index = SelectionFrame
 
 local margin = 10
 
-function SelectionFrame:new(owner, close, delete)
+function SelectionFrame:new(owner, delete, show_sliders, notify_dragging)
     local mx, my = util.input:get_mouse_position()
 
     local obj = {
         owner = owner,
-        close = close,
-        delete = delte,
+        delete = delete,
+        notify_dragging = notify_dragging,
         slider_margin = 5,
         slider_size = 10,
-        is_dragging_slider = false,
-        current_slider = nil,
+        dragging_slider = nil,
         dragging_offset = Vec2:new(mx, my):sub(owner.position),
-        is_dragging = true,
+        is_dragging = false,
     }
 
-    obj.sliders = self:get_sliders(owner)
+    obj.sliders = show_sliders and self:get_sliders(owner) or {}
 
     return setmetatable(obj, SelectionFrame)
 end
@@ -47,36 +46,26 @@ end
 function SelectionFrame:update(dt)
     if self:cursor_is_over_owner() then
         util.set_hand_cursor()
-    else
-        util.set_default_cursor()
     end
 
-    if self.is_dragging_slider then
-        local mx, my = util.input:get_mouse_position()
-        self.current_slider.action(mx, my)
+    local mx, my = util.input:get_mouse_position()
+
+    if self.dragging_slider then
+        self.dragging_slider.action(mx, my)
     end
 
     if self.is_dragging then
         util.set_hand_cursor()
-        local mx, my = util.input:get_mouse_position()
         self.owner.position = Vec2:new(mx, my):sub(self.dragging_offset)
     end
 
     local hovered_slider = self:get_hovered_slider()
-
     if hovered_slider then
         util.set_hand_cursor()
-        self.current_slider = hovered_slider
-    else
-        self.current_slider = nil
     end
 end
 
 function SelectionFrame:get_hovered_slider()
-    if self.is_dragging_slider then
-        return self.current_slider
-    end
-
     local mx, my = util.input:get_mouse_position()
 
     for _, slider in pairs(self.sliders) do
@@ -89,42 +78,39 @@ function SelectionFrame:get_hovered_slider()
     return nil
 end
 
+function SelectionFrame:start_dragging(x, y)
+    self.dragging_offset = Vec2:new(x, y):sub(self.owner.position)
+    self.is_dragging = true
+end
+
 function SelectionFrame:mousepressed(x, y, button, istouch, presses)
-    if self.current_slider then
-        self.is_dragging_slider = true
-        return true
-    end
+    self.dragging_slider = self:get_hovered_slider()
+    if self.dragging_slider then return true end
 
     local is_over_owner = self:cursor_is_over_owner()
 
     if is_over_owner then
-        self.is_dragging = true
-        self.dragging_offset = Vec2:new(x, y):sub(self.owner.position)
-    end
-
-    if 
-        not self.is_dragging_slider and 
-        not self.is_dragging and
-        not is_over_owner
-    then
-        self.close()
+        self.notify_dragging(x, y)
+        return true
+    else 
+        return false
     end
 end
 
 function SelectionFrame:mousereleased(x, y, button, istouch, presses)
-    self.is_dragging_slider = false
+    self.dragging_slider = nil
     self.is_dragging = false
 end
 
 function SelectionFrame:keypressed(key)
     if key == "backspace" then
-        self.delete(owner)
+        self.delete(self.owner)
     end
 end
 
 function SelectionFrame:cursor_is_over_owner()
     local mx, my = util.input:get_mouse_position()
-    return util.is_within_margin(Vec2:new(mx, my), self.owner.position, margin + self.owner.height/2, margin + self.owner.height/2)
+    return util.is_within_margin(Vec2:new(mx, my), self.owner.position, margin + self.owner.width/2, margin + self.owner.height/2)
 end
 
 local pivot_sliders = require("editor.sliders.pivot_sliders")
