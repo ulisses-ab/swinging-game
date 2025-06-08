@@ -12,13 +12,18 @@ local editor_mode = {
     selection_frames = {},
     area_select_start = nil,
     drag_start = nil,
-    has_dragged = false
+    has_dragged = false,
+    get_mouse_position = nil,
 }
 
 local hover_margin = 10
 
 function editor_mode:start_editing(scene)
+    self.selection_frames = {}
     self.editing_scene = scene
+    self.get_mouse_position = function()
+        return scene:get_mouse_position()
+    end
 end 
 
 function editor_mode:stop_editing()
@@ -30,7 +35,7 @@ function editor_mode:get_hovering_object()
         return nil
     end
 
-    local x, y = util.input:get_mouse_position()
+    local x, y = self:get_mouse_position()
 
     for _, object in ipairs(self.editing_scene.objects) do
         local bounding_box = object:get_bounding_box()
@@ -45,7 +50,7 @@ function editor_mode:get_objects_inside_area_select()
         return {}
     end
 
-    local mx, my = util.input:get_mouse_position()
+    local mx, my = self:get_mouse_position()
     local ax = self.area_select_start.x
     local ay = self.area_select_start.y
 
@@ -69,7 +74,7 @@ function editor_mode:get_objects_inside_area_select()
 end
 
 function editor_mode:update(dt)
-    local mx, my = util.input:get_mouse_position()
+    local mx, my = self:get_mouse_position()
     if 
         drag_start and
         (math.abs(mx-drag_start.x) > 0 or
@@ -85,22 +90,59 @@ function editor_mode:update(dt)
     if self:get_hovering_object() then
         util.set_hand_cursor()
     end
+
+    self:move_scene()
+end
+
+function editor_mode:move_scene()
+    if not self.editing_scene then return end
+
+    local MOVEMENT_SPEED = 50
+
+    up = util.input:is_down("w")
+    down = util.input:is_down("s")
+    left = util.input:is_down("a")
+    right = util.input:is_down("d")
+
+    local movement = Vec2:new(0, 0)
+    if up then movement.y = movement.y + 1 end
+    if down then movement.y = movement.y - 1 end
+    if left then movement.x = movement.x + 1 end
+    if right then movement.x = movement.x - 1 end
+
+    local camera_scale = self.editing_scene.camera_scale
+
+    movement = movement:normalize()
+    movement = movement:mul(MOVEMENT_SPEED)
+
+    local limit = 5000
+
+    self.editing_scene.camera_translate.x = math.max(-limit, math.min(self.editing_scene.camera_translate.x + movement.x, limit))
+    self.editing_scene.camera_translate.y = math.max(-limit, math.min(self.editing_scene.camera_translate.y + movement.y, limit))
 end
 
 function editor_mode:draw()
+    if not self.editing_scene then return end
+
+    love.graphics.push()
+    love.graphics.scale(self.editing_scene.camera_scale, self.editing_scene.camera_scale) 
+    love.graphics.translate(self.editing_scene.camera_translate.x, self.editing_scene.camera_translate.y)
+
     for _, frame in ipairs(self.selection_frames) do
         frame:draw()
     end
 
     if self.area_select_start ~= nil then
         love.graphics.setColor(0.7, 0.7, 1)
-        local mx, my = util.input:get_mouse_position()
+        local mx, my = self:get_mouse_position()
         local as = self.area_select_start
         love.graphics.rectangle("line", as.x, as.y, mx - as.x, my - as.y)
         love.graphics.setColor(0.7, 0.7, 1, 0.1)
         love.graphics.rectangle("fill", as.x, as.y, mx - as.x, my - as.y)
         love.graphics.setColor(1, 1, 1, 1)
     end
+
+    love.graphics.pop()
 end
 
 function editor_mode:make_selection_frame(object, show_sliders)
@@ -129,12 +171,13 @@ function editor_mode:select_single(obj)
     self.selection_frames = {
         self:make_selection_frame(obj)
     }
-
-    local mx, my = util.input:get_mouse_position()
-    self.selection_frames[1]:start_dragging(mx, my)
 end
 
 function editor_mode:mousepressed(x, y, button, istouch, presses)
+    if not self.editing_scene then return end
+
+    x, y = self.editing_scene:translate_xy(x, y)
+
     local clicked_on_frame = false
     for _, frame in ipairs(self.selection_frames) do
         if frame:mousepressed(x, y, button, istouch, presses) then
@@ -151,12 +194,18 @@ function editor_mode:mousepressed(x, y, button, istouch, presses)
     local hovered_object = self:get_hovering_object()
     if hovered_object then
         self:select_single(hovered_object)
+        local mx, my = self:get_mouse_position()
+        self.selection_frames[1]:start_dragging(mx, my)
     else
         self.area_select_start = Vec2:new(x, y)
     end
 end
 
 function editor_mode:mousereleased(x, y, button, istouch, presses)
+    if not self.editing_scene then return end
+
+    x, y = self.editing_scene:translate_xy(x, y)
+
     local hovered_object = self:get_hovering_object()
     if hovered_object and not self.has_dragged then
         self:select_single(hovered_object)
@@ -184,7 +233,7 @@ function editor_mode:keypressed(key)
         frame:keypressed(key)
     end
 
-    local mx, my = util.input:get_mouse_position()
+    local mx, my = self:get_mouse_position()
     local pos = Vec2:new(mx, my)
     local obj = nil
 
@@ -198,7 +247,15 @@ function editor_mode:keypressed(key)
         obj = Slingshot:new(pos)
     elseif key == "5" then
         obj = Enemy:new(pos)
+    else 
+        return
     end
+
+    self:add_to_scene(obj)
+end
+
+function editor_mode:add_to_scene(obj)
+    obj.position = self.editing_scene.camera_translate:mul(-1)
 
     if self.editing_scene and obj then
         self.editing_scene:add(obj)
@@ -208,6 +265,12 @@ end
 function editor_mode:keyreleased(key)
 
     
+end
+
+function editor_mode:wheelmoved(x, y)
+    if not self.editing_scene then return end
+
+    self.editing_scene.camera_scale = math.min(3, math.max(self.editing_scene.camera_scale + y * 0.1, 0.4))
 end
 
 return editor_mode

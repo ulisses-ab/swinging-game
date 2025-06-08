@@ -23,11 +23,6 @@ function input:keyreleased(key)
     self.keys_down[key] = false
 end
 
-function input:get_mouse_position()
-    local x, y = love.mouse.getPosition()
-    return x / util.scale, y / util.scale
-end
-
 function input:mousepressed(x, y, button) 
     self.mouse_buttons_down[button] = true
 end
@@ -118,6 +113,16 @@ end
 function util.get_dimensions()
     local w, h = love.graphics.getDimensions()
     return w / util.scale, h / util.scale
+end
+
+function util.sign(num)
+    if num > 0 then
+        return 1
+    elseif num < 0 then
+        return -1
+    else
+        return 0
+    end
 end
 
 return util

@@ -52,7 +52,7 @@ function Platform:is_above(point, margin)
 
     return 
         point.y <= self.position.y - self.height/2 - 10 and
-        point.x >= self.position.x - margin - self.width / 2 and point.x <= self.position.x + margin + self.width / 2
+        point.x > self.position.x - margin - self.width / 2 and point.x < self.position.x + margin + self.width / 2
 end
 
 function Platform:is_right_above(point, margin)
@@ -60,7 +60,7 @@ function Platform:is_right_above(point, margin)
 
     return 
         point.y >= self.position.y - self.height/2 - 10 and point.y < self.position.y - self.height/2 + 4 and
-        point.x >= self.position.x - margin - self.width / 2 and point.x <= self.position.x + margin + self.width / 2
+        point.x > self.position.x - margin - self.width / 2 and point.x < self.position.x + margin + self.width / 2
 end
 
 function Platform:is_below(point, margin)
@@ -68,7 +68,7 @@ function Platform:is_below(point, margin)
     
     return 
         point.y > self.position.y - self.height/2 - 10 and
-        point.x >= self.position.x - margin - self.width / 2 and point.x <= self.position.x + margin + self.width / 2
+        point.x > self.position.x - margin - self.width / 2 and point.x < self.position.x + margin + self.width / 2
 end
 
 

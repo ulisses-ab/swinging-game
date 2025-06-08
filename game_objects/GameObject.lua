@@ -8,13 +8,14 @@ GameObject.type = "GameObject"
 function GameObject:new(position, velocity, acceleration)
     local obj = setmetatable({
         z = 0,
-        position = position,
+        position = position or Vec2:new(0, 0),
         velocity = velocity or Vec2:new(0, 0),
         acceleration = acceleration or Vec2:new(0, 0),
         acceleration_on = true,
-        last_position = position:copy(),
+        last_position = position and position:copy() or Vec2:new(0, 0),
         width = 10,
         height = 10,
+        get_mouse_position = love.mouse.getPosition
     }, self)
 
     return obj

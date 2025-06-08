@@ -62,7 +62,6 @@ edit_scene = function(scene_data)
     })
 
     game_manager.current_scene = new_scene
-    print(new_scene)
 end
 
 function game_manager:load()
@@ -95,6 +94,12 @@ end
 
 function game_manager:mousereleased(x, y, button, istouch, presses)
     self.current_scene:mousereleased(x, y, button, istouch, presses)
+end
+
+function game_manager:wheelmoved(x, y)
+    if self.current_scene.wheelmoved then
+        self.current_scene:wheelmoved(x, y)
+    end
 end
 
 return game_manager

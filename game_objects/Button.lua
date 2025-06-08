@@ -39,11 +39,18 @@ function Button:update(dt)
 end
 
 function Button:cursor_is_over()
-    local x, y = util.input:get_mouse_position()
+    local x, y = self:get_mouse_position()
     return util.is_within_margin(Vec2:new(x, y), self.position, self.width/2, self.height/2)
 end
 
 function Button:draw() 
+    local margin = 0
+
+    love.graphics.setColor(0, 0, 0, 0.3)
+    love.graphics.rectangle("fill", self.position.x-self.width/2-margin, self.position.y-self.height/2-margin, self.width+2*margin, self.height+2*margin)
+    love.graphics.setColor(1, 1, 1, 1)
+
+
     love.graphics.rectangle("line", self.position.x-self.width/2, self.position.y-self.height/2, self.width, self.height)
 
     if self:cursor_is_over() then

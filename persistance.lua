@@ -3,6 +3,7 @@ local Pivot = require("game_objects.Pivot")
 local Slingshot = require("game_objects.Slingshot")
 local Platform = require("game_objects.Platform")
 local Enemy = require("game_objects.Enemy")
+local Wall = require("game_objects.Wall")
 local Scene = require("Scene")
 local json = require("lib.dkjson")
 
@@ -13,7 +14,8 @@ local supported_classes = {
     Pivot = Pivot,
     Slingshot = Slingshot,
     Platform = Platform,
-    Enemy = Enemy
+    Enemy = Enemy,
+    Wall = Wall
 }
 
 local function object_factory(data)

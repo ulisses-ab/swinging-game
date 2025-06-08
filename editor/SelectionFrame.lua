@@ -8,7 +8,7 @@ SelectionFrame.__index = SelectionFrame
 local margin = 10
 
 function SelectionFrame:new(owner, delete, show_sliders, notify_dragging)
-    local mx, my = util.input:get_mouse_position()
+    local mx, my = owner:get_mouse_position()
 
     local obj = {
         owner = owner,
@@ -48,7 +48,7 @@ function SelectionFrame:update(dt)
         util.set_hand_cursor()
     end
 
-    local mx, my = util.input:get_mouse_position()
+    local mx, my = self.owner:get_mouse_position()
 
     if self.dragging_slider then
         self.dragging_slider.action(mx, my)
@@ -66,7 +66,7 @@ function SelectionFrame:update(dt)
 end
 
 function SelectionFrame:get_hovered_slider()
-    local mx, my = util.input:get_mouse_position()
+    local mx, my = self.owner:get_mouse_position()
 
     for _, slider in pairs(self.sliders) do
         local slider_position = slider.position()
@@ -109,13 +109,14 @@ function SelectionFrame:keypressed(key)
 end
 
 function SelectionFrame:cursor_is_over_owner()
-    local mx, my = util.input:get_mouse_position()
+    local mx, my = self.owner:get_mouse_position()
     return util.is_within_margin(Vec2:new(mx, my), self.owner.position, margin + self.owner.width/2, margin + self.owner.height/2)
 end
 
 local pivot_sliders = require("editor.sliders.pivot_sliders")
 local platform_sliders = require("editor.sliders.platform_sliders")
 local slingshot_sliders = require("editor.sliders.slingshot_sliders")
+local wall_sliders = require("editor.sliders.wall_sliders")
 
 function SelectionFrame:get_sliders(owner)
     if owner.type == "Pivot" then
@@ -124,6 +125,8 @@ function SelectionFrame:get_sliders(owner)
         return slingshot_sliders(owner)
     elseif owner.type == "Platform" then
         return platform_sliders(owner, margin)
+    elseif owner.type == "Wall" then
+        return wall_sliders(owner, margin)
     end
 
     return {}

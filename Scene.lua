@@ -1,5 +1,6 @@
 local util = require("util")
 local Bullet = require("game_objects.Bullet")
+local Vec2 = require("Vec2")
 
 local Scene = {}
 Scene.__index = Scene
@@ -11,13 +12,20 @@ function Scene:new(name)
         slingshots = {},
         platforms = {},
         players = {},
-        name = name or "unnamed scene"
+        walls = {},
+        name = name or "unnamed scene",
+        camera_scale = 1,
+        camera_translate = Vec2:new(0, 0)
     }
 
     return setmetatable(obj, Scene)
 end
 
 function Scene:add(object)
+    object.get_mouse_position = function()
+        return self:get_mouse_position()
+    end
+
     table.insert(self.objects, object)
 
     local actions = {
@@ -25,6 +33,7 @@ function Scene:add(object)
         Slingshot = self.add_slingshot,
         Platform = self.add_platform,
         Player = self.add_player,
+        Wall = self.add_wall
     }
 
     local action = actions[object.type]
@@ -89,10 +98,21 @@ function Scene:remove_platform(platform)
     util.remove_obj_in_array(self.platforms, platform)
 end
 
+function Scene:add_wall(wall)
+    table.insert(self.walls, wall)
+    self:add_platform(wall)
+end
+
+function Scene:remove_wall(wall)
+    util.remove_obj_in_array(self.walls, wall)
+    self:remove_platform(wall)
+end
+
 function Scene:update(dt)
     self:check_pivot_collision()
     self:check_slingshot_collision()
     self:check_platform_collision()
+    self:check_wall_collision()
 
     for _, object in ipairs(self.objects) do
         if object.update then
@@ -101,7 +121,27 @@ function Scene:update(dt)
     end
 end
 
+function Scene:translate_xy(x, y)
+    x = x / self.camera_scale
+    y = y / self.camera_scale
+    x = x - self.camera_translate.x
+    y = y - self.camera_translate.y
+
+    return x, y
+end
+
+function Scene:get_mouse_position()
+    x, y = love.mouse.getPosition()
+    x = x - love.graphics.getWidth() / 2 
+    y = y - love.graphics.getHeight() / 2
+    return self:translate_xy(x, y)
+end
+
 function Scene:draw()    
+    love.graphics.push()
+    love.graphics.scale(self.camera_scale, self.camera_scale)
+    love.graphics.translate(self.camera_translate.x, self.camera_translate.y)
+
     table.sort(self.objects, function(a, b)
         return (a.z or 0) < (b.z or 0)
     end)
@@ -111,6 +151,8 @@ function Scene:draw()
             object:draw()
         end
     end
+
+    love.graphics.pop()
 end
 
 function Scene:keypressed(key)
@@ -130,6 +172,8 @@ function Scene:keyreleased(key)
 end
 
 function Scene:mousepressed(x, y, button, istouch, presses)
+    x, y = self:translate_xy(x, y)
+
     for _, object in ipairs(self.objects) do
         if object.mousepressed then
             object:mousepressed(x, y, button, istouch, presses)
@@ -138,6 +182,8 @@ function Scene:mousepressed(x, y, button, istouch, presses)
 end
 
 function Scene:mousereleased(x, y, button, istouch, presses)
+    x, y = self:translate_xy(x, y)
+
     for _, object in ipairs(self.objects) do
         if object.mousereleased then
             object:mousereleased(x, y, button, istouch, presses)
@@ -192,6 +238,18 @@ function Scene:check_platform_collision()
             then
                 player:set_platform(platform)
                 break
+            end
+        end
+    end
+end
+
+function Scene:check_wall_collision()
+    for _, player in ipairs(self.players) do
+        for _, wall in ipairs(self.walls) do
+            if 
+                util.is_within_margin(player.position, wall.position, (wall.width+player.width)/2, (wall.height+player.height)/2)
+            then
+                player:set_wall(wall)
             end
         end
     end

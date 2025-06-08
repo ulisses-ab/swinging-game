@@ -6,6 +6,7 @@ local SlingshotBehavior = require("behaviors.SlingshotBehavior")
 local PlatformBehavior = require("behaviors.PlatformBehavior")
 local GunBehavior = require("behaviors.GunBehavior")
 local SwordBehavior = require("behaviors.SwordBehavior")
+local WallBehavior = require("behaviors.WallBehavior")
 local sounds = require("sounds")
 
 local Player = {}
@@ -44,6 +45,7 @@ function Player:new(position)
     obj.slingshot_behavior = SlingshotBehavior:new(obj, draw_line)
     obj.platform_behavior = PlatformBehavior:new(obj)
     obj.gun_behavior = GunBehavior:new(obj)
+    obj.wall_behavior = WallBehavior:new(obj)
 
     obj.can_jump = false
 
@@ -93,43 +95,7 @@ end
 function Player:draw() 
     love.graphics.setColor(main_color.r, main_color.g, main_color.b)
     GameObject.draw(self)
-
-    local sw, sh = love.graphics.getDimensions()
-
-    if self.position.y < 0 then
-        if self.position.x < 30 then
-            love.graphics.polygon('fill', 
-                60, 35,
-                35, 60,
-                30, 30
-            )
-        elseif self.position.x > sw-30 then
-            love.graphics.polygon('fill', 
-                sw-60, 35,
-                sw-35, 60,
-                sw-30, 30
-            )
-        else
-            love.graphics.polygon('fill', 
-                self.position.x - 15, 55,
-                self.position.x + 15, 55,
-                self.position.x, 30
-            )
-        end
-    elseif self.position.x < 0 then
-        love.graphics.polygon('fill', 
-            55, self.position.y - 15,
-            55, self.position.y + 15,
-            30, self.position.y
-        )
-    elseif self.position.x > sw then
-        love.graphics.polygon('fill', 
-            sw-55, self.position.y - 15,
-            sw-55, self.position.y + 15,
-            sw-30, self.position.y
-        )
-    end
-
+    
     love.graphics.setColor(1, 1, 1)
 
     self.pivot_behavior:draw()
@@ -355,6 +321,10 @@ end
 
 function Player:reset_platform()
     self.platform_behavior:reset_platform()
+end
+
+function Player:set_wall(wall)
+    self.wall_behavior:set_wall(wall)
 end
 
 return Player

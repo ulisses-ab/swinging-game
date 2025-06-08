@@ -4,6 +4,7 @@ local editor_gui = require("game_manager.editor_gui")
 local Platform = require("game_objects.Platform")
 local Pivot = require("game_objects.Pivot")
 local Slingshot = require("game_objects.Slingshot")
+local Wall = require("game_objects.Wall")
 local Vec2 = require("Vec2")
 local util = require("util")
 
@@ -12,20 +13,25 @@ EditorOverlay.__index = EditorOverlay
 setmetatable(EditorOverlay, GameplayOverlay)
 
 function EditorOverlay:new(scene_data, actions)
-    local sw, sh = util.get_dimensions()
-    local center = Vec2:new(sw/2, sh/2)
-
     local obj = GameplayOverlay:new(scene_data, actions)
+
+    local function add_to_editor(obj)
+        editor_mode:add_to_scene(obj)
+        editor_mode:select_single(obj)
+    end
 
     obj.gui = editor_gui:get_scene({
         platform = function()
-            editor_mode.editing_scene:add(Platform:new(center))
+            add_to_editor(Platform:new())
         end,
         pivot = function()
-            editor_mode.editing_scene:add(Pivot:new(center))
+            add_to_editor(Pivot:new())
         end,
         slingshot = function()
-            editor_mode.editing_scene:add(Slingshot:new(center))
+            add_to_editor(Slingshot:new())
+        end,
+        wall = function()
+            add_to_editor(Wall:new())
         end,
     })
 
@@ -39,6 +45,10 @@ function EditorOverlay:update(dt)
     editor_mode:update(dt)
     self.gui:update(dt)
     self.countdown = -1
+end
+
+function EditorOverlay:move_camera_if_player_out_of_bounds(dt)
+
 end
 
 function EditorOverlay:draw()
@@ -72,6 +82,10 @@ function EditorOverlay:mousereleased(x, y, button)
     GameplayOverlay.mousereleased(self, x, y, button)
     editor_mode:mousereleased(x, y, button)
     self.gui:mousereleased(x, y, button)
+end
+
+function EditorOverlay:wheelmoved(x, y)
+    editor_mode:wheelmoved(x, y)
 end
 
 return EditorOverlay

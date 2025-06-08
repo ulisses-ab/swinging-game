@@ -7,11 +7,15 @@ local editor_mode = require("editor.editor_mode")
 local game_manager = require("game_manager.game_manager")
 local sounds = require("sounds")
 
-util.scale = 0.75
 util.time_rate = 0.66
 
+local function toggle_fullscreen()
+    love.window.setFullscreen(not love.window.getFullscreen())
+    canvas = love.graphics.newCanvas()
+end
+
 function love.load()
-    love.window.setMode(1280, 720, {resizable=false, vsync=true})
+    love.window.setMode(1280, 720, {resizable=true, vsync=true})
 
 
     canvas = love.graphics.newCanvas()
@@ -42,6 +46,7 @@ function love.draw()
     love.graphics.clear()
 
     love.graphics.push()
+    love.graphics.translate(love.graphics.getWidth() / 2, love.graphics.getHeight() / 2)
     love.graphics.setColor(1,1,1)
     love.graphics.scale(util.scale, util.scale)
     game_manager:draw()
@@ -56,7 +61,15 @@ function love.draw()
     love.graphics.setShader()
 end
 
-function love.keypressed(key)
+function love.keypressed(key)  
+    if 
+        key == "f11"  or
+        (key == "lalt" and util.input:is_down("return")) or
+        (key == "return" and util.input:is_down("lalt"))
+    then
+        toggle_fullscreen()
+    end
+    
     util.input:keypressed(key)
     game_manager:keypressed(key)
 end
@@ -67,12 +80,23 @@ function love.keyreleased(key)
 end
 
 function love.mousepressed(x, y, button, istouch, presses)
+    x = x - love.graphics.getWidth() / 2 
+    y = y - love.graphics.getHeight() / 2
     util.input:mousepressed(x/util.scale, y/util.scale, button, istouch, presses)
     game_manager:mousepressed(x/util.scale, y/util.scale, button, istouch, presses)
 end
 
 function love.mousereleased(x, y, button, istouch, presses)
+    x = x - love.graphics.getWidth() / 2 
+    y = y - love.graphics.getHeight() / 2
     util.input:mousereleased(x/util.scale, y/util.scale, button, istouch, presses)
     game_manager:mousereleased(x/util.scale, y/util.scale, button, istouch, presses)
 end
- 
+
+function love.wheelmoved(x, y)
+    game_manager:wheelmoved(x, y)
+end
+
+function love.resize(w, h)
+    canvas = love.graphics.newCanvas()
+end

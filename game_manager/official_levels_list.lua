@@ -19,17 +19,17 @@ function official_levels_list:get_scene(actions)
     end
 
     local items = love.filesystem.getDirectoryItems("official_levels")
-    local y_start = sh / 2 - 100
+    local y_start = -100
     local y_offset = 100
     for i, file in ipairs(items) do
-        local button = Button:new(Vec2:new(sw/2, y_start + (i-1) * y_offset), 50, 50, i, function()
+        local button = Button:new(Vec2:new(0, y_start + (i-1) * y_offset), 50, 50, i, function()
             actions.play(love.filesystem.read("official_levels/" .. file))
         end)
 
         scene:add(button)
     end
 
-    local quit_button = Button:new(Vec2:new(200, 200), 60, 60, "←", actions.quit)
+    local quit_button = Button:new(Vec2:new(-350, -150), 60, 60, "←", actions.quit)
     scene:add(quit_button)
 
     return scene

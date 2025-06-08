@@ -33,7 +33,7 @@ function GunBehavior:release()
         return
     end
 
-    local mx, my = util.input:get_mouse_position()
+    local mx, my = self.owner:get_mouse_position()
     local mouse_pos = Vec2:new(mx, my)
 
     local direction = mouse_pos:sub(self.owner.position):normalize()

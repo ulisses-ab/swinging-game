@@ -14,7 +14,7 @@ function PlatformBehavior:new(owner)
         owner = owner,
         platform = nil,
         on_land = nil,
-        just_went_doown = nil
+        just_went_down = nil
     }
 
     return setmetatable(obj, self)
@@ -25,12 +25,15 @@ function PlatformBehavior:is_on_platform()
 end
 
 function PlatformBehavior:try_going_down()
-    self.just_went_doown = self.plataform
+    if not self.platform then return end
+    if self.platform.type == "Wall" then return end
+
+    self.just_went_down = self.plataform
     self:reset_platform()
 end
 
 function PlatformBehavior:set_platform(platform)
-    if self.just_went_doown == platform then
+    if self.just_went_down == platform then
         return
     end
 

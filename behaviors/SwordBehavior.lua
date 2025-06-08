@@ -30,7 +30,7 @@ function SwordBehavior:try_attack()
 
     self.attack_timer = 0
 
-    local mx, my = love.mouse.getPosition()
+    local mx, my = self.owner:get_mouse_position()
     local mouse_pos = Vec2:new(mx, my)
 
     self.attack_angle = mouse_pos:sub(self.owner.position):normalize():angle()

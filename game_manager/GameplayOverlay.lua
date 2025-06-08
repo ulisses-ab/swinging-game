@@ -15,6 +15,7 @@ local countdown_font = love.graphics.newFont("assets/fonts/default.ttf", 100)
 
 function GameplayOverlay:new(scene_data, actions)
     local scene = scene_data and persistance.scene_from_string(scene_data) or Scene:new()
+    scene.camera_scale = 0.66666
 
     local obj = {
         game_scene = scene,
@@ -51,12 +52,30 @@ function GameplayOverlay:update(dt)
         return
     end
 
-    self.countdown = self.countdown - dt / 0.66
+    self.countdown = self.countdown - dt / util.time_rate
     if self.countdown > 0 then
         return
     end
 
     self.game_scene:update(dt)
+    self:move_camera_if_player_out_of_bounds(dt)
+end
+
+function GameplayOverlay:move_camera_if_player_out_of_bounds(dt)
+    local player = self.game_scene.players[1]
+    if not player then return end
+
+    local absolute_player_pos = player.position:add(self.game_scene.camera_translate):mul(self.game_scene.camera_scale)
+
+    local CORRECTION_SPEED = 8
+
+    local x_limit = 150
+    local x_correct = math.max(0, math.abs(absolute_player_pos.x) - x_limit) * util.sign(absolute_player_pos.x) * dt * CORRECTION_SPEED
+
+    local y_limit = 100
+    local y_correct = math.max(0, math.abs(absolute_player_pos.y) - y_limit) * util.sign(absolute_player_pos.y) * dt * CORRECTION_SPEED
+
+    self.game_scene.camera_translate = self.game_scene.camera_translate:sub(Vec2:new(x_correct, y_correct))
 end
 
 function GameplayOverlay:draw()
@@ -76,12 +95,11 @@ function GameplayOverlay:draw()
         love.graphics.setFont(countdown_font)
         love.graphics.printf(
             math.floor(self.countdown)+1,
-            sw/2-50,
-            sh/2 - love.graphics.getFont():getHeight() / 2,
+            -50,
+            -50,
             100,
             "center"
         )
-
     end
 end
 
