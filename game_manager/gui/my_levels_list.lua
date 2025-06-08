@@ -23,7 +23,7 @@ function my_levels_list:get_scene(actions)
     local y_offset = 100
     for i, file in ipairs(items) do
         local button = Button:new(Vec2:new(0, y_start + (i-1) * y_offset), 500, 50, i, function()
-            actions.play(persistance.load_scene("my_levels/" .. file))
+            actions.play(love.filesystem.read("my_levels/" .. file))
         end)
 
         scene:add(button)

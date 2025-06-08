@@ -15,7 +15,8 @@ function Scene:new(name)
         walls = {},
         name = name or "unnamed scene",
         camera_scale = 1,
-        camera_translate = Vec2:new(0, 0)
+        camera_translate = Vec2:new(0, 0),
+        frozen = false
     }
 
     return setmetatable(obj, Scene)
@@ -75,6 +76,7 @@ end
 
 function Scene:add_player(player)
     player.gun_behavior.spawn_bullet = self:bullet_spawner()
+    player:set_get_walls(function() return self.walls end)
     table.insert(self.players, player)
 end
 
@@ -109,16 +111,17 @@ function Scene:remove_wall(wall)
 end
 
 function Scene:update(dt)
-    self:check_pivot_collision()
-    self:check_slingshot_collision()
-    self:check_platform_collision()
-    self:check_wall_collision()
+    if self.frozen then return end
 
     for _, object in ipairs(self.objects) do
         if object.update then
             object:update(dt)
         end
     end
+
+    self:check_pivot_collision()
+    self:check_slingshot_collision()
+    self:check_platform_collision()
 end
 
 function Scene:translate_xy(x, y)
@@ -156,6 +159,8 @@ function Scene:draw()
 end
 
 function Scene:keypressed(key)
+    if self.frozen then return end
+
     for _, object in ipairs(self.objects) do
         if object.keypressed then
             object:keypressed(key)
@@ -164,6 +169,8 @@ function Scene:keypressed(key)
 end
 
 function Scene:keyreleased(key)
+    if self.frozen then return end
+
     for _, object in ipairs(self.objects) do
         if object.keyreleased then
             object:keyreleased(key)
@@ -172,6 +179,8 @@ function Scene:keyreleased(key)
 end
 
 function Scene:mousepressed(x, y, button, istouch, presses)
+    if self.frozen then return end
+
     x, y = self:translate_xy(x, y)
 
     for _, object in ipairs(self.objects) do
@@ -182,6 +191,8 @@ function Scene:mousepressed(x, y, button, istouch, presses)
 end
 
 function Scene:mousereleased(x, y, button, istouch, presses)
+    if self.frozen then return end
+
     x, y = self:translate_xy(x, y)
 
     for _, object in ipairs(self.objects) do
@@ -231,25 +242,13 @@ function Scene:check_platform_collision()
     for _, player in ipairs(self.players) do
         for _, platform in ipairs(self.platforms) do
             if 
-                (platform:is_above(player.last_position:add(player:center_to_bottom_vec()), player.width / 2) and
-                platform:is_below(player.position:add(player:center_to_bottom_vec()), player.width / 2)) or
-                (platform:is_right_above(player.position:add(player:center_to_bottom_vec()), player.width / 2) and
+                (platform:is_above(player.last_position:add(player:center_to_bottom_vec()), player.width / 2 - 2) and
+                platform:is_below(player.position:add(player:center_to_bottom_vec()), player.width / 2 - 2)) or
+                (platform:is_right_above(player.position:add(player:center_to_bottom_vec()), player.width / 2 - 2) and
                 player.velocity.y > 0)
             then
                 player:set_platform(platform)
                 break
-            end
-        end
-    end
-end
-
-function Scene:check_wall_collision()
-    for _, player in ipairs(self.players) do
-        for _, wall in ipairs(self.walls) do
-            if 
-                util.is_within_margin(player.position, wall.position, (wall.width+player.width)/2, (wall.height+player.height)/2)
-            then
-                player:set_wall(wall)
             end
         end
     end
@@ -265,6 +264,18 @@ end
 function Scene:object_remover()
     return function(object)
         self:remove(object)
+    end
+end
+
+function Scene:respawn_players()
+    for _, player in ipairs(self.players) do
+        player:respawn()
+    end
+end
+
+function Scene:set_player_spawns()
+    for _, player in ipairs(self.players) do
+        player.spawn_position = player.position
     end
 end
 

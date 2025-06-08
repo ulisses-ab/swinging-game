@@ -69,6 +69,12 @@ function love.keypressed(key)
     then
         toggle_fullscreen()
     end
+
+    if key == "t" then
+        util.time_rate = util.time_rate + 0.1
+    elseif key == "g" then
+        util.time_rate = util.time_rate - 0.1
+    end
     
     util.input:keypressed(key)
     game_manager:keypressed(key)

@@ -1,11 +1,11 @@
 local Scene = require("Scene")
 local persistance = require("persistance")
 local editor_mode = require("editor.editor_mode")
-local starting_menu = require("game_manager.starting_menu")
-local official_levels_list = require("game_manager.official_levels_list")
-local my_levels_list = require("game_manager.my_levels_list")
-local GameplayOverlay = require("game_manager.GameplayOverlay")
-local EditorOverlay = require("game_manager.EditorOverlay")
+local starting_menu = require("game_manager.gui.starting_menu")
+local official_levels_list = require("game_manager.gui.official_levels_list")
+local my_levels_list = require("game_manager.gui.my_levels_list")
+local GameplayOverlay = require("game_manager.overlays.GameplayOverlay")
+local EditorOverlay = require("game_manager.overlays.EditorOverlay")
 
 local game_manager = {
     current_scene = nil,
@@ -41,23 +41,27 @@ go_to_main_menu = function()
 end
 
 play_scene = function(scene_data)
-    game_manager.current_scene = GameplayOverlay:new(scene_data, {
+    local scene = persistance.scene_from_string(scene_data)
+
+    game_manager.current_scene = GameplayOverlay:new(scene, {
         restart = function()
             play_scene(scene_data)
         end,
         quit = function()
-            go_to_official_levels_list()
+            go_to_main_menu()
         end,
     })
 end
 
 edit_scene = function(scene_data)
-    local new_scene = EditorOverlay:new(scene_data, {
+    local scene = scene_data and persistance.scene_from_string(scene_data) or nil
+
+    local new_scene = EditorOverlay:new(scene, {
         restart = function()
             play_scene(scene_data)
         end,
         quit = function()
-            go_to_official_levels_list()
+            go_to_main_menu()
         end,
     })
 

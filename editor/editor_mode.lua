@@ -75,6 +75,8 @@ end
 
 function editor_mode:update(dt)
     local mx, my = self:get_mouse_position()
+    self:move_scene()
+    
     if 
         drag_start and
         (math.abs(mx-drag_start.x) > 0 or
@@ -91,7 +93,7 @@ function editor_mode:update(dt)
         util.set_hand_cursor()
     end
 
-    self:move_scene()
+    self.editing_scene:set_player_spawns()
 end
 
 function editor_mode:move_scene()
@@ -99,26 +101,15 @@ function editor_mode:move_scene()
 
     local MOVEMENT_SPEED = 50
 
-    up = util.input:is_down("w")
-    down = util.input:is_down("s")
-    left = util.input:is_down("a")
-    right = util.input:is_down("d")
-
-    local movement = Vec2:new(0, 0)
-    if up then movement.y = movement.y + 1 end
-    if down then movement.y = movement.y - 1 end
-    if left then movement.x = movement.x + 1 end
-    if right then movement.x = movement.x - 1 end
+    local movement = util.input:read_wasd():normalize():mul(-MOVEMENT_SPEED)
 
     local camera_scale = self.editing_scene.camera_scale
 
-    movement = movement:normalize()
-    movement = movement:mul(MOVEMENT_SPEED)
+    local limit_x = 4000
+    local limit_y = 2000
 
-    local limit = 5000
-
-    self.editing_scene.camera_translate.x = math.max(-limit, math.min(self.editing_scene.camera_translate.x + movement.x, limit))
-    self.editing_scene.camera_translate.y = math.max(-limit, math.min(self.editing_scene.camera_translate.y + movement.y, limit))
+    self.editing_scene.camera_translate.x = math.max(-limit_x, math.min(self.editing_scene.camera_translate.x + movement.x, limit_x))
+    self.editing_scene.camera_translate.y = math.max(-limit_y, math.min(self.editing_scene.camera_translate.y + movement.y, limit_y))
 end
 
 function editor_mode:draw()
@@ -127,10 +118,6 @@ function editor_mode:draw()
     love.graphics.push()
     love.graphics.scale(self.editing_scene.camera_scale, self.editing_scene.camera_scale) 
     love.graphics.translate(self.editing_scene.camera_translate.x, self.editing_scene.camera_translate.y)
-
-    for _, frame in ipairs(self.selection_frames) do
-        frame:draw()
-    end
 
     if self.area_select_start ~= nil then
         love.graphics.setColor(0.7, 0.7, 1)
@@ -142,6 +129,10 @@ function editor_mode:draw()
         love.graphics.setColor(1, 1, 1, 1)
     end
 
+    for _, frame in ipairs(self.selection_frames) do
+        frame:draw()
+    end
+    
     love.graphics.pop()
 end
 
@@ -264,13 +255,12 @@ end
 
 function editor_mode:keyreleased(key)
 
-    
 end
 
 function editor_mode:wheelmoved(x, y)
     if not self.editing_scene then return end
 
-    self.editing_scene.camera_scale = math.min(3, math.max(self.editing_scene.camera_scale + y * 0.1, 0.4))
+    self.editing_scene.camera_scale = math.min(3, math.max(self.editing_scene.camera_scale + y * 0.1, 0.15))
 end
 
 return editor_mode

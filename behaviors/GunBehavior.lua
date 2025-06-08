@@ -27,7 +27,7 @@ function GunBehavior:update(dt)
 end
 
 function GunBehavior:release()
-    self.is_loading = false
+    self:reset()
 
     if self.load_timer < self.MIN_LOADING_TIME then
         return
@@ -44,6 +44,10 @@ end
 function GunBehavior:load()
     self.load_timer = 0
     self.is_loading = true
+end
+
+function GunBehavior:reset()
+    self.is_loading = false
 end
 
 function GunBehavior:draw()

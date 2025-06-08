@@ -1,3 +1,5 @@
+local Vec2 = require("Vec2")
+
 local util = {
     scale = 1
 }
@@ -123,6 +125,17 @@ function util.sign(num)
     else
         return 0
     end
+end
+
+function util.input:read_wasd()
+    local direction = Vec2:new(0, 0)
+
+    if util.input:is_down("w") then direction.y = direction.y - 1 end
+    if util.input:is_down("a") then direction.x = direction.x - 1 end
+    if util.input:is_down("s") then direction.y = direction.y + 1 end
+    if util.input:is_down("d") then direction.x = direction.x + 1 end
+
+    return direction
 end
 
 return util

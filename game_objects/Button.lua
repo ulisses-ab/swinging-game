@@ -17,6 +17,7 @@ function Button:new(position, width, height, text, action)
     obj.action = action
     obj.font = love.graphics.newFont("assets/fonts/default.ttf", 28)
     obj.text_size = 24
+    obj.mouse_is_over = false
 
     obj.is_clicking = false
 
@@ -33,7 +34,9 @@ end
 function Button:update(dt)
     if self:cursor_is_over() then
         util.set_hand_cursor()
+        self.mouse_is_over = true
     else
+        self.mouse_is_over = false
         self.is_clicking = false
     end
 end
@@ -53,7 +56,7 @@ function Button:draw()
 
     love.graphics.rectangle("line", self.position.x-self.width/2, self.position.y-self.height/2, self.width, self.height)
 
-    if self:cursor_is_over() then
+    if self.mouse_is_over then
         love.graphics.setColor(1, 1, 1, 0.2)
         love.graphics.rectangle("fill", self.position.x-self.width/2, self.position.y-self.height/2, self.width, self.height)
         love.graphics.setColor(1, 1, 1, 1)

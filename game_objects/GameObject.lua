@@ -46,6 +46,10 @@ function GameObject:from_persistance_object(obj)
     return GameObject:new(Vec2:new(obj.x, obj.y), obj.velocity, obj.acceleration)
 end
 
+function GameObject:next_position(dt)
+    return self.position:add(self.velocity:mul(dt))
+end
+
 function GameObject:disable_acceleration()
     self.acceleration_on = false
 end

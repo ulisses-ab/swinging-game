@@ -3,21 +3,21 @@ local Vec2 = require("Vec2")
 local function wall_sliders(wall, margin)
     local min_dimension = 10
 
+    local function resize_dimension(value, extremity, is_forward, margin)
+        local new_size = is_forward and (value - extremity - margin) or (extremity - value - margin)
+        if new_size < min_dimension then
+            new_size = min_dimension
+        end
+        return new_size, extremity + (is_forward and new_size/2 or -new_size/2)
+    end
+
     obj = {
         left = {
             position = function() 
                 return Vec2:new(wall.position.x - wall.width/2 - margin, wall.position.y) 
             end,
             action = function(x, y)
-                local right_extremity = wall.position.x + wall.width/2
-                local new_width = right_extremity - x - margin
-
-                if new_width < min_dimension then
-                    new_width = min_dimension
-                end
-
-                wall.width = new_width
-                wall.position.x = right_extremity - new_width/2
+                wall.width, wall.position.x = resize_dimension(x, wall.position.x + wall.width/2, false, margin)
             end
         },
         right = {
@@ -25,15 +25,7 @@ local function wall_sliders(wall, margin)
                 return Vec2:new(wall.position.x + wall.width/2 + margin, wall.position.y) 
             end,
             action = function(x, y)
-                local left_extremity = wall.position.x - wall.width/2
-                local new_width = x - left_extremity - margin
-
-                if new_width < min_dimension then
-                    new_width = min_dimension
-                end
-
-                wall.width = new_width
-                wall.position.x = left_extremity + new_width/2
+                wall.width, wall.position.x = resize_dimension(x, wall.position.x - wall.width/2, true, margin)
             end
         },
         up = {
@@ -41,15 +33,7 @@ local function wall_sliders(wall, margin)
                 return Vec2:new(wall.position.x, wall.position.y - wall.height/2 - margin) 
             end,
             action = function(x, y)
-                local down_extremity = wall.position.y + wall.height/2
-                local new_height = down_extremity - y - margin
-
-                if new_height < min_dimension then
-                    new_height = min_dimension
-                end
-
-                wall.height = new_height
-                wall.position.y = down_extremity - new_height/2
+                wall.height, wall.position.y = resize_dimension(y, wall.position.y + wall.height/2, false, margin)
             end
         },
         down = {
@@ -57,15 +41,7 @@ local function wall_sliders(wall, margin)
                 return Vec2:new(wall.position.x, wall.position.y + wall.height/2 + margin) 
             end,
             action = function(x, y)
-                local up_extremity = wall.position.y - wall.height/2
-                local new_height = y - up_extremity - margin
-
-                if new_height < min_dimension then
-                    new_height = min_dimension
-                end
-
-                wall.height = new_height
-                wall.position.y = up_extremity + new_height/2
+                wall.height, wall.position.y = resize_dimension(y, wall.position.y - wall.height/2, true, margin)
             end
         },
     }

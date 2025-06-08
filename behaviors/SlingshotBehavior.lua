@@ -17,7 +17,7 @@ function SlingshotBehavior:new(owner, draw_line)
         draw_line = draw_line
     }
 
-    obj.dampening_factor = 2
+    obj.dampening_factor = 3
 
     return setmetatable(obj, self)
 end

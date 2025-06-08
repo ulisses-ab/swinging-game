@@ -11,6 +11,9 @@ Enemy.type = "Enemy"
 function Enemy:new(position)
     local obj = GameObject:new(position)
 
+    obj.width = 20
+    obj.height = 20
+
     return setmetatable(obj, self)
 end
 
