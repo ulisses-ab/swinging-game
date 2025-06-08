@@ -13,11 +13,9 @@ function PlatformBehavior:new(owner)
     local obj = {
         owner = owner,
         platform = nil,
-        on_land = nil
+        on_land = nil,
+        just_went_doown = nil
     }
-
-    obj.go_down_timer = 10
-    obj.GO_DOWN_DURATION = 0.05
 
     return setmetatable(obj, self)
 end
@@ -27,12 +25,12 @@ function PlatformBehavior:is_on_platform()
 end
 
 function PlatformBehavior:try_going_down()
-    self.go_down_timer = 0
+    self.just_went_doown = self.plataform
     self:reset_platform()
 end
 
 function PlatformBehavior:set_platform(platform)
-    if self.go_down_timer < self.GO_DOWN_DURATION then
+    if self.just_went_doown == platform then
         return
     end
 
@@ -53,8 +51,6 @@ function PlatformBehavior:reset_platform()
 end
 
 function PlatformBehavior:update(dt)
-    self.go_down_timer = self.go_down_timer + dt
-
     if not self:is_on_platform() then
         return
     end

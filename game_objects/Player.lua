@@ -346,6 +346,10 @@ function Player:set_platform(platform)
         return
     end
 
+    if util.input:is_down("s") then
+        return
+    end
+
     self.platform_behavior:set_platform(platform)
 end
 

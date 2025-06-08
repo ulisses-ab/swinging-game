@@ -185,8 +185,10 @@ function Scene:check_platform_collision()
     for _, player in ipairs(self.players) do
         for _, platform in ipairs(self.platforms) do
             if 
-                platform:is_above(player.last_position:add(player:center_to_bottom_vec()), player.width / 2) and
-                platform:is_below(player.position:add(player:center_to_bottom_vec()), player.width / 2)
+                (platform:is_above(player.last_position:add(player:center_to_bottom_vec()), player.width / 2) and
+                platform:is_below(player.position:add(player:center_to_bottom_vec()), player.width / 2)) or
+                (platform:is_right_above(player.position:add(player:center_to_bottom_vec()), player.width / 2) and
+                player.velocity.y > 0)
             then
                 player:set_platform(platform)
                 break

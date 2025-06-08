@@ -55,6 +55,14 @@ function Platform:is_above(point, margin)
         point.x >= self.position.x - margin - self.width / 2 and point.x <= self.position.x + margin + self.width / 2
 end
 
+function Platform:is_right_above(point, margin)
+    margin = margin or 0
+
+    return 
+        point.y >= self.position.y - self.height/2 - 10 and point.y < self.position.y - self.height/2 + 4 and
+        point.x >= self.position.x - margin - self.width / 2 and point.x <= self.position.x + margin + self.width / 2
+end
+
 function Platform:is_below(point, margin)
     margin = margin or 0
     
