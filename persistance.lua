@@ -21,9 +21,7 @@ local supported_classes = {
 local function object_factory(data)
     local object_class = supported_classes[data.type]
 
-    if not object_class then
-        error("Unknown object type")
-    end
+    if not object_class then return nil end
 
     return object_class:from_persistance_object(data)
 end
@@ -33,10 +31,12 @@ function persistance.scene_from_string(string)
     
     local compressed = love.data.decode("string", "base64", string)
     local json_data = love.data.decompress("string", "zlib", compressed)
+    print(json_data)
     local data = json.decode(json_data)
 
     for _, obj_data in ipairs(data.objects) do
-        scene:add(object_factory(obj_data))
+        local obj = object_factory(obj_data)
+        if obj then scene:add(obj) end
     end
 
     scene.name = data.name or "unnamed scene"

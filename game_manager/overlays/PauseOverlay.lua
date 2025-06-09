@@ -17,7 +17,6 @@ function PauseOverlay:new(scene, actions, paused_gui)
 
     local obj = {
         COUNTDOWN_TIME = 3,
-        game_timer = 0,
         game_scene = scene,
         paused = nil,
         actions = actions,

@@ -135,6 +135,7 @@ function PlayerController:keypressed(key)
         self.player.pivot_behavior:try_attaching()
         self.player.slingshot_behavior:try_attaching()
         self.spacebar_buffer_timer = self.SPACEBAR_BUFFER_TIME
+        self.player.attack_behavior:attack()
 
         if self.can_jump and (self.player.platform_behavior:is_on_platform() or self.coyote_timer > 0) then
             self:jump()
@@ -143,8 +144,6 @@ function PlayerController:keypressed(key)
         self.can_jump = false
     elseif key == "q" then
         print(self.player.velocity:length())
-    elseif key == "r" then
-        self.player:respawn()
     elseif key == "s" then
         self.player.platform_behavior:try_going_down()
     end
@@ -174,15 +173,9 @@ function PlayerController:keyreleased(key)
 end
 
 function PlayerController:mousepressed(x, y, button)
-    if button == 1 then
-        self.player.gun_behavior:load()
-    end
 end
 
 function PlayerController:mousereleased(x, y, button, istouch, presses)
-    if button == 1 then
-        self.player.gun_behavior:release()
-    end
 end
 
 return PlayerController

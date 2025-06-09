@@ -84,17 +84,17 @@ function SelectionFrame:start_dragging(x, y)
 end
 
 function SelectionFrame:mousepressed(x, y, button, istouch, presses)
-    self.dragging_slider = self:get_hovered_slider()
-    if self.dragging_slider then return true end
-
     local is_over_owner = self:cursor_is_over_owner()
 
     if is_over_owner then
         self.notify_dragging(x, y)
         return true
-    else 
-        return false
     end
+
+    self.dragging_slider = self:get_hovered_slider()
+    if self.dragging_slider then return true end
+
+    return false
 end
 
 function SelectionFrame:mousereleased(x, y, button, istouch, presses)

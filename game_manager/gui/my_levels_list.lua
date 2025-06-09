@@ -26,22 +26,7 @@ function my_levels_list:get_scene(actions)
     local level_buttons = {}
     local share_buttons = {}
 
-    for i, file in ipairs(items) do
-        local button = Button:new(Vec2:new(-150, y_start + (i-1) * y_offset), 650, 60, file, function()
-            actions.play(love.filesystem.read("my_levels/" .. file))
-        end)
-
-        local share_button = Button:new(Vec2:new(325, y_start + (i-1) * y_offset), 300, 60, "compartilhar", function()
-            actions.share(love.filesystem.read("my_levels/" .. file))
-        end)
-        share_button.text_size = 15
-
-        table.insert(level_buttons, button)
-        table.insert(share_buttons, share_button)
-
-        scene:add(button)
-        scene:add(share_button)
-    end
+    local share_time = -10
 
     local quit_button = Button:new(Vec2:new(-350, -150), 60, 60, "←", actions.quit)
     quit_button.z = 2
@@ -85,6 +70,51 @@ function my_levels_list:get_scene(actions)
         
         update_level_buttons()
     end
+
+    local share_notice = TextBox:new(Vec2:new(0, 250), 800, 80, "nível copiado para a área de transferência", {
+        padding = 30,
+        margin = 10,
+        background_color = {
+            r = 0, g = 0, b = 0, a = 1
+        },
+        borders = true,
+    })
+    share_notice.text_size = 20
+    share_notice.z = 3
+    
+    scene:add(share_notice)
+
+    local SHARE_NOTICE_TIME = 3
+
+    scene.update = function(self, dt)
+        Scene.update(self, dt)
+
+        if love.timer.getTime() - share_time > SHARE_NOTICE_TIME then
+            share_notice.config.visible = false
+        else
+            share_notice.config.visible = true
+        end
+    end
+
+    for i, file in ipairs(items) do
+        local button = Button:new(Vec2:new(-150, y_start + (i-1) * y_offset), 650, 60, file, function()
+            actions.play(love.filesystem.read("my_levels/" .. file))
+        end)
+
+        local share_button = Button:new(Vec2:new(325, y_start + (i-1) * y_offset), 300, 60, "compartilhar", function()
+            love.system.setClipboardText(love.filesystem.read("my_levels/" .. file))
+            share_time = love.timer.getTime()
+            share_notice.text = "'" .. file .. "' copiado para a área de transferência"
+        end)
+        share_button.text_size = 15
+
+        table.insert(level_buttons, button)
+        table.insert(share_buttons, share_button)
+
+        scene:add(button)
+        scene:add(share_button)
+    end
+
 
     return scene
 end

@@ -8,6 +8,8 @@ local game_manager = require("game_manager.game_manager")
 local sounds = require("sounds")
 
 util.time_rate = 0.66
+util.timer_time_rate = 1
+util.global_line_width = 2
 
 local function toggle_fullscreen()
     love.window.setFullscreen(not love.window.getFullscreen())
@@ -48,6 +50,7 @@ function love.draw()
     love.graphics.push()
     love.graphics.translate(love.graphics.getWidth() / 2, love.graphics.getHeight() / 2)
     love.graphics.setColor(1,1,1)
+    love.graphics.setLineWidth(util.global_line_width)
     love.graphics.scale(util.scale, util.scale)
     game_manager:draw()
     love.graphics.pop()

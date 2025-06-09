@@ -23,6 +23,7 @@ function Wall:persistance_object()
         y = self.position.y,
         width = self.width,
         height = self.height,
+        type = self.type,
     }
 
     return obj
@@ -31,7 +32,8 @@ end
 function Wall:from_persistance_object(obj)
     return Wall:new(
         Vec2:new(obj.x, obj.y),
-        Vec2:new(obj.width, obj.height)
+        obj.width,
+        obj.height
     )
 end
 

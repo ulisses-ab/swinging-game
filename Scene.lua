@@ -13,6 +13,7 @@ function Scene:new(name)
         platforms = {},
         players = {},
         walls = {},
+        enemies = {},
         name = name or "unnamed scene",
         camera_scale = 1,
         camera_translate = Vec2:new(0, 0),
@@ -27,6 +28,16 @@ function Scene:add(object)
         return self:get_mouse_position()
     end
 
+    object.add_object = function(object)
+        self:add(object)
+    end
+
+    object.remove_object = function(object)
+        self:remove(object)
+    end
+
+    
+
     table.insert(self.objects, object)
 
     local actions = {
@@ -34,7 +45,8 @@ function Scene:add(object)
         Slingshot = self.add_slingshot,
         Platform = self.add_platform,
         Player = self.add_player,
-        Wall = self.add_wall
+        Wall = self.add_wall,
+        Enemy = self.add_enemy
     }
 
     local action = actions[object.type]
@@ -57,6 +69,8 @@ function Scene:remove(object)
         Slingshot = self.remove_slingshot,
         Platform = self.remove_platform,
         Player = self.remove_player,
+        Wall = self.remove_wall,
+        Enemey = self.remove_enemy,
     }
 
     local action = actions[object.type]
@@ -75,8 +89,10 @@ function Scene:remove_pivot(pivot)
 end
 
 function Scene:add_player(player)
-    player.gun_behavior.spawn_bullet = self:bullet_spawner()
     player:set_get_walls(function() return self.walls end)
+    player:set_get_enemies(function() 
+        return self.enemies 
+    end)
     table.insert(self.players, player)
 end
 
@@ -110,7 +126,17 @@ function Scene:remove_wall(wall)
     self:remove_platform(wall)
 end
 
+function Scene:add_enemy(enemy)
+    table.insert(self.enemies, enemy)
+end
+
+function Scene:remove_enemy(enemy)
+    util.remove_obj_in_array(self.enemies, enemy)
+end
+
 function Scene:update(dt)
+    self:frozen_update(dt)
+
     if self.frozen then return end
 
     for _, object in ipairs(self.objects) do
@@ -122,6 +148,14 @@ function Scene:update(dt)
     self:check_pivot_collision()
     self:check_slingshot_collision()
     self:check_platform_collision()
+end
+
+function Scene:frozen_update(dt)
+    for _, object in ipairs(self.objects) do
+        if object.frozen_update then
+            object:frozen_update(dt)
+        end
+    end
 end
 
 function Scene:translate_xy(x, y)
@@ -264,13 +298,6 @@ function Scene:check_platform_collision()
     end
 end
 
-function Scene:bullet_spawner()
-    return function(position, velocity)
-        local bullet = Bullet:new(position, velocity, self:object_remover())
-        self:add(bullet)
-    end
-end
-
 function Scene:object_remover()
     return function(object)
         self:remove(object)
@@ -280,6 +307,14 @@ end
 function Scene:respawn_players()
     for _, player in ipairs(self.players) do
         player:respawn()
+    end
+
+    self:respawn_enemies()
+end
+
+function Scene:respawn_enemies()
+    for _, enemy in ipairs(self.enemies) do
+        enemy:respawn()
     end
 end
 

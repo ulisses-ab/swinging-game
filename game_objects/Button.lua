@@ -63,7 +63,6 @@ function Button:draw()
 
     local font = love.graphics.newFont("assets/fonts/default.ttf", self.text_size)
     love.graphics.setFont(font)
-    print(self.text_size)
     love.graphics.printf(
         self.text,
         self.position.x - self.width / 2,

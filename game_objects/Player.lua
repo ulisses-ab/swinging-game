@@ -4,8 +4,7 @@ local Vec2 = require("Vec2")
 local PivotBehavior = require("behaviors.PivotBehavior")
 local SlingshotBehavior = require("behaviors.SlingshotBehavior")
 local PlatformBehavior = require("behaviors.PlatformBehavior")
-local GunBehavior = require("behaviors.GunBehavior")
-local SwordBehavior = require("behaviors.SwordBehavior")
+local AttackBehavior = require("behaviors.AttackBehavior")
 local WallBehavior = require("behaviors.WallBehavior")
 local PlayerController = require("behaviors.PlayerController")
 
@@ -22,12 +21,14 @@ local main_color = {
 }
 
 local function draw_line(pos1, pos2) 
+    love.graphics.setLineWidth(3)
     love.graphics.setColor(main_color.r, main_color.g, main_color.b)
     love.graphics.line(
         pos1.x, pos1.y,
         pos2.x, pos2.y
     )
     love.graphics.setColor(1, 1, 1)
+    love.graphics.setLineWidth(util.global_line_width)
 end
 
 function Player:new(spawn_position)
@@ -42,12 +43,12 @@ function Player:new(spawn_position)
     obj.pivot_behavior = PivotBehavior:new(obj, draw_line)
     obj.slingshot_behavior = SlingshotBehavior:new(obj, draw_line)
     obj.platform_behavior = PlatformBehavior:new(obj)
-    obj.gun_behavior = GunBehavior:new(obj)
+    obj.attack_behavior = AttackBehavior:new(obj)
     obj.wall_behavior = WallBehavior:new(obj)
     obj.controller = PlayerController:new(obj)
 
-    obj.width = 25
-    obj.height = 25
+    obj.width = 28
+    obj.height = 28
 
     return setmetatable(obj, self)
 end
@@ -82,7 +83,7 @@ function Player:draw()
 
     self.pivot_behavior:draw()
     self.slingshot_behavior:draw()
-    self.gun_behavior:draw()
+    self.attack_behavior:draw()
 end
 
 function Player:update(dt)
@@ -93,7 +94,7 @@ function Player:update(dt)
     self.pivot_behavior:update(dt)
     self.slingshot_behavior:update(dt)
     self.platform_behavior:update(dt)
-    self.gun_behavior:update(dt)
+    self.attack_behavior:update(dt)
     self.controller:update(dt)
     self.wall_behavior:update(dt)
 end
@@ -104,7 +105,7 @@ function Player:respawn()
     self.pivot_behavior:reset_near_pivot()
     self.slingshot_behavior:reset_near_slingshot()
     self.platform_behavior:reset_platform()
-    self.gun_behavior:reset()
+    self.attack_behavior:reset()
 end
 
 function Player:keypressed(key)
@@ -149,8 +150,12 @@ function Player:reset_platform()
     self.platform_behavior:reset_platform()
 end
 
-function Player:set_get_walls(wall)
-    self.wall_behavior:set_get_walls(wall)
+function Player:set_get_walls(get_walls)
+    self.wall_behavior:set_get_walls(get_walls)
+end
+
+function Player:set_get_enemies(get_enemies)
+    self.attack_behavior:set_get_enemies(get_enemies)
 end
 
 return Player

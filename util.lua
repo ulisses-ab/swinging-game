@@ -1,7 +1,8 @@
 local Vec2 = require("Vec2")
 
 local util = {
-    scale = 1
+    scale = 1,
+    global_line_width = 2
 }
 
 local input = {
@@ -136,6 +137,45 @@ function util.input:read_wasd()
     if util.input:is_down("d") then direction.x = direction.x + 1 end
 
     return direction
+end
+
+function util.draw_ring(x, y, outer_radius, inner_radius)
+    local width = outer_radius - inner_radius
+
+    love.graphics.setLineWidth(width)
+
+    love.graphics.circle("line", x, y, (outer_radius + inner_radius) / 2)
+
+    love.graphics.setLineWidth(util.global_line_width)
+end
+
+function util.draw_rotated_rectangle(filltype, x, y, width, height, angle)
+    love.graphics.push()
+    love.graphics.translate(x, y)
+    love.graphics.rotate(angle)
+    love.graphics.rectangle(filltype, -width/2, -height/2, width, height)
+    love.graphics.pop()
+end
+
+function util.ease_in_out(x)
+    x = math.max(0, math.min(x, 1))
+
+    if x < 0.5 then
+        return 4 * x * x * x
+    else
+        x = 1-x
+        return 1 - x * x * x * 4
+    end
+end
+
+function util.ease_out(x, pow)
+    pow = pow or 3
+
+    x = math.max(0, math.min(x, 1))
+
+    x = 1 - x
+
+    return math.pow(x, pow)
 end
 
 return util
