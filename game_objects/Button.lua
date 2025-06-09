@@ -15,7 +15,6 @@ function Button:new(position, width, height, text, action)
     obj.height = height
     obj.text = text
     obj.action = action
-    obj.font = love.graphics.newFont("assets/fonts/default.ttf", 28)
     obj.text_size = 24
     obj.mouse_is_over = false
 
@@ -62,7 +61,9 @@ function Button:draw()
         love.graphics.setColor(1, 1, 1, 1)
     end
 
-    love.graphics.setFont(self.font, self.text_size)
+    local font = love.graphics.newFont("assets/fonts/default.ttf", self.text_size)
+    love.graphics.setFont(font)
+    print(self.text_size)
     love.graphics.printf(
         self.text,
         self.position.x - self.width / 2,

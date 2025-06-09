@@ -12,6 +12,7 @@ local util = require("util")
 local paused = require("game_manager.gui.paused")
 local GameplayOverlay = require("game_manager.overlays.GameplayOverlay")
 local done_editing = require("game_manager.gui.done_editing")
+local persistance = require("persistance")
 
 local EditorOverlay = {}
 EditorOverlay.__index = EditorOverlay
@@ -75,6 +76,13 @@ end
 
 function EditorOverlay:editing_done()
     self.done_overlay = done_editing:get_scene({
+        done = function(name)
+            self.game_scene.name = name
+        
+            local compressed_scene = persistance.save_in_dir(self.game_scene, "my_levels", name)
+
+            self.actions.quit()
+        end,
         quit = function()
             self.done_overlay = nil
         end
@@ -105,12 +113,13 @@ end
 
 function EditorOverlay:draw()
     if self.playtest_overlay ~= nil then
-        self.playtest_overlay:draw(dt)
+        self.playtest_overlay:draw()
         return
     end
 
+    self.game_scene:draw()
     self.gui:draw()
-    PauseOverlay.draw(self, dt)
+    self:draw_pause()
     editor_mode:draw()
 
     if self.done_overlay ~= nil then
@@ -216,6 +225,13 @@ function EditorOverlay:wheelmoved(x, y)
     end
 
     editor_mode:wheelmoved(x, y)
+end
+
+function EditorOverlay:textinput(t)
+    if self.done_overlay ~= nil then 
+        self.done_overlay:textinput(t)
+        return
+    end
 end
 
 return EditorOverlay

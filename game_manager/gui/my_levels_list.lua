@@ -4,6 +4,7 @@ local Scene = require("Scene")
 local Vec2 = require("Vec2")
 local persistance = require("persistance")
 local util = require("util")
+local GameObject = require("game_objects.GameObject")
 
 local my_levels_list = {
 
@@ -19,20 +20,71 @@ function my_levels_list:get_scene(actions)
     end
 
     local items = love.filesystem.getDirectoryItems("my_levels")
-    local y_start = sh / 2 - 100
-    local y_offset = 100
+    local y_start = 0
+    local y_offset = 72
+
+    local level_buttons = {}
+    local share_buttons = {}
+
     for i, file in ipairs(items) do
-        local button = Button:new(Vec2:new(0, y_start + (i-1) * y_offset), 500, 50, i, function()
+        local button = Button:new(Vec2:new(-150, y_start + (i-1) * y_offset), 650, 60, file, function()
             actions.play(love.filesystem.read("my_levels/" .. file))
         end)
 
+        local share_button = Button:new(Vec2:new(325, y_start + (i-1) * y_offset), 300, 60, "compartilhar", function()
+            actions.share(love.filesystem.read("my_levels/" .. file))
+        end)
+        share_button.text_size = 15
+
+        table.insert(level_buttons, button)
+        table.insert(share_buttons, share_button)
+
         scene:add(button)
+        scene:add(share_button)
     end
 
     local quit_button = Button:new(Vec2:new(-350, -150), 60, 60, "←", actions.quit)
-    local add_button = Button:new(Vec2:new(220, -150), 400, 60, "criar nível", actions.edit_scene)
+    quit_button.z = 2
+    local add_button = Button:new(Vec2:new(320, -150), 200, 60, "criar", actions.edit_scene)
+    add_button.z = 2
+
+    local cover = GameObject:new(Vec2:new(0, -800))
+    cover.width = 10000
+    cover.height = 1470
+    cover.z = 1
+
+    cover.draw = function(self)
+        love.graphics.setColor(0, 0, 0, 1)
+        GameObject.draw(self)
+        love.graphics.setColor(1, 1, 1, 1)
+        love.graphics.line(-500, self.position.y + self.height/2, 500, self.position.y + self.height/2)
+    end
+
     scene:add(quit_button)
     scene:add(add_button)
+    scene:add(cover)
+
+    local function update_level_buttons()
+        for i, button in ipairs(level_buttons) do
+            button.position = Vec2:new(button.position.x, y_start + (i-1) * y_offset)
+        end 
+
+        for i, button in ipairs(share_buttons) do
+            button.position = Vec2:new(button.position.x, y_start + (i-1) * y_offset)
+        end 
+    end
+
+    scene.wheelmoved = function(self, x, y)
+        y_start = y_start + y * 40
+
+        y_start = math.max(-#level_buttons * y_offset, math.min(y_start, 0))
+
+        if y_start < 250 - #level_buttons * y_offset then
+            y_start = math.max(250 - #level_buttons * y_offset)
+        end
+        
+        update_level_buttons()
+    end
 
     return scene
 end

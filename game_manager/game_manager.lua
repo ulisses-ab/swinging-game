@@ -61,7 +61,7 @@ edit_scene = function(scene_data)
             play_scene(scene_data)
         end,
         quit = function()
-            go_to_main_menu()
+            go_to_my_levels_list()
         end,
     })
 
@@ -103,6 +103,12 @@ end
 function game_manager:wheelmoved(x, y)
     if self.current_scene.wheelmoved then
         self.current_scene:wheelmoved(x, y)
+    end
+end
+
+function game_manager:textinput(t)
+    if self.current_scene.textinput then
+        self.current_scene:textinput(t)
     end
 end
 

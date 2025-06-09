@@ -202,6 +202,16 @@ function Scene:mousereleased(x, y, button, istouch, presses)
     end
 end
 
+function Scene:textinput(t)
+    if self.frozen then return end
+
+    for _, object in ipairs(self.objects) do
+        if object.textinput then
+            object:textinput(t)
+        end
+    end
+end
+
 function Scene:check_pivot_collision()
     for _, player in ipairs(self.players) do
         local found = false 

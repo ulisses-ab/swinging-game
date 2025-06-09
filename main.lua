@@ -103,6 +103,10 @@ function love.wheelmoved(x, y)
     game_manager:wheelmoved(x, y)
 end
 
+function love.textinput(text)
+    game_manager:textinput(text)
+end
+
 function love.resize(w, h)
     canvas = love.graphics.newCanvas()
 end

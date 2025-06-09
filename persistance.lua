@@ -78,4 +78,29 @@ function persistance.save_scene(scene, filename)
     love.filesystem.write(filename, string)
 end
 
+function persistance.save_in_dir(scene, dirname, filename)
+    local string = persistance.scene_to_string(scene)
+
+    local base_name = filename
+    local index = 0
+
+    local ok = false
+    while not ok do
+        filename = index == 0 and base_name or base_name .. "(" .. index .. ")"
+
+        ok = true
+        for _, item in ipairs(love.filesystem.getDirectoryItems(dirname)) do
+            if filename == item then
+                ok = false
+            end
+        end
+
+        index = index + 1
+    end
+
+    love.filesystem.write(dirname .. "/" .. filename, string)
+
+    return string
+end
+
 return persistance

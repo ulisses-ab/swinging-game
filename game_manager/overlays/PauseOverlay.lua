@@ -63,9 +63,13 @@ function PauseOverlay:update(dt)
 end
 
 function PauseOverlay:draw()
-    local sw, sh = util.get_dimensions()
-
     self.game_scene:draw()
+
+    self:draw_pause()
+end
+
+function PauseOverlay:draw_pause()
+    local sw, sh = util.get_dimensions()
 
     if self.paused then
         love.graphics.setColor(0, 0, 0, 0.95)
