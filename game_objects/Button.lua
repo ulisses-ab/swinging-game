@@ -8,26 +8,19 @@ setmetatable(Button, GameObject)
 
 Button.type = "Button"
 
-function Button:new(position, width, height, text, action)
+function Button:new(position, width, height, text, action, font)
     local obj = GameObject:new(position)
 
     obj.width = width
     obj.height = height
     obj.text = text
     obj.action = action
-    obj.text_size = 24
     obj.mouse_is_over = false
+    obj.font = font or love.graphics.newFont("assets/fonts/default.ttf", 24)
 
     obj.is_clicking = false
 
     return setmetatable(obj, self)
-end
-
-function Button:get_bounding_box()
-    return {
-        position = Vec2:new(self.position.x - self.width / 2, self.position.y - self.height / 2),
-        size = Vec2:new(self.width, self.height)
-    }
 end
 
 function Button:update(dt)
@@ -61,8 +54,7 @@ function Button:draw()
         love.graphics.setColor(1, 1, 1, 1)
     end
 
-    local font = love.graphics.newFont("assets/fonts/default.ttf", self.text_size)
-    love.graphics.setFont(font)
+    love.graphics.setFont(self.font)
     love.graphics.printf(
         self.text,
         self.position.x - self.width / 2,

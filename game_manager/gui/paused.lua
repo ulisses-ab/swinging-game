@@ -15,11 +15,9 @@ function paused:get_scene(actions)
 
     local title = TextBox:new(Vec2:new(0, -150), 400, 60, "Pausado")
     local continue_button = Button:new(Vec2:new(0, -50), 400, 60, "Continuar", actions.continue)
-    local restart_button = Button:new(Vec2:new(0, 50), 400, 60, "Reiniciar", actions.restart)
-    local quit_button = Button:new(Vec2:new(0, 150), 400, 60, "Sair", actions.quit)
+    local quit_button = Button:new(Vec2:new(0, 50), 400, 60, "Sair", actions.quit)
 
     scene:add(continue_button)
-    scene:add(restart_button)
     scene:add(quit_button)
     scene:add(title)
 

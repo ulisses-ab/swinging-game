@@ -97,7 +97,7 @@ function my_levels_list:get_scene(actions)
     end
 
     for i, file in ipairs(items) do
-        local button = Button:new(Vec2:new(0, y_start + (i-1) * y_offset), 950, 60, file, function()
+        local button = Button:new(Vec2:new(-300, y_start + (i-1) * y_offset), 950, 60, file, function()
             actions.play(love.filesystem.read("my_levels/" .. file))
         end)
 
@@ -106,13 +106,17 @@ function my_levels_list:get_scene(actions)
             share_time = love.timer.getTime()
             share_notice.text = "'" .. file .. "' copiado para a área de transferência"
         end)
-        share_button.text_size = 15
+
+        local edit_button = Button:new(Vec2:new(325, y_start + (i-1) * y_offset), 300, 60, "compartilhar", function()
+            actions.edit_scene(love.filesystem.read("my_levels/" .. file))
+        end)
 
         table.insert(level_buttons, button)
         table.insert(share_buttons, share_button)
 
         scene:add(button)
-        --scene:add(share_button)
+        --scene:add(share_button)]
+        scene:add(edit_button)
 
         scene.camera_translate.y = -100
     end

@@ -64,12 +64,16 @@ end
 function EditorOverlay:start_playtest()
     self.game_scene.frozen = false
 
-    self.playtest_overlay = GameplayOverlay:new(self.game_scene, nil, {get_scene = function()
+    local function stop_playtest()
         self.playtest_overlay = nil
         self.game_scene.frozen = true
         self.game_scene:respawn_players()
-    end})
+        self.game_scene.camera_translate = self.game_scene.obj_by_type["Player"][1].position:copy()
+    end
 
+    self.playtest_overlay = GameplayOverlay:new(self.game_scene, {finished = stop_playtest}, {get_scene = stop_playtest})
+
+    self.playtest_overlay.ending_enabled = false
     self.playtest_overlay.COUNTDOWN_TIME = -1
     self.playtest_overlay.countdown = -1
 end

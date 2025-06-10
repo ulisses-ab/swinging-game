@@ -12,7 +12,7 @@ function Pivot:new(position, is_rigid, range)
     local obj = GameObject:new(position)
 
     obj.is_rigid = is_rigid or false
-    obj.range = range or 300
+    obj.range = range or 200
 
     return setmetatable(obj, self)
 end

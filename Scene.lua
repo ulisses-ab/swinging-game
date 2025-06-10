@@ -15,7 +15,6 @@ function Scene:new(name)
         camera_scale = 1,
         camera_translate = Vec2:new(0, 0),
         frozen = false,
-        alpha = 1
     }
 
     return setmetatable(obj, Scene)
@@ -25,6 +24,8 @@ function Scene:add(object)
     object.scene = self
 
     table.insert(self.objects, object)
+
+    if not object.type then return end
 
     if #self.obj_by_type[object.type] == 0 then
         self.obj_by_type[object.type] = {object}
@@ -36,6 +37,9 @@ end
 
 function Scene:remove(object)
     util.remove_obj_in_array(self.objects, object)
+
+    if not object.type then return end
+
     util.remove_obj_in_array(self.obj_by_type[object.type], object)
 end
 

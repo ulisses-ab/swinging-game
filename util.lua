@@ -186,4 +186,27 @@ function util.lerp(a, b, t)
     return a + (b - a) * t
 end
 
+function util.draw_star(filltype, x, y, outer_radius, inner_radius, points, angle)
+    points = points or 5
+    angle = angle or 0
+    inner_radius = inner_radius or 0.45 * outer_radius
+
+    local vertices = {}
+
+    for i = 0, points*2 do
+        local current_angle = 2*math.pi * (i / (points*2))
+
+
+        local radius = i % 2 == 0 and inner_radius or outer_radius
+
+        local px = x + radius * math.cos(current_angle + angle + math.pi/2)
+        local py = y + radius * math.sin(current_angle + angle + math.pi/2)
+
+        table.insert(vertices, px)
+        table.insert(vertices, py)
+    end
+
+    love.graphics.polygon(filltype, vertices)
+end
+
 return util

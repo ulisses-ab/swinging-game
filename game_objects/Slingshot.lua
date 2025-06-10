@@ -11,7 +11,7 @@ Slingshot.type = "Slingshot"
 function Slingshot:new(position, strength, up_range, down_range, left_range, right_range)
     local obj = GameObject:new(position)
 
-    strength = strength or 15000
+    strength = strength or 20000
 
     up_range = up_range or 100
     down_range = down_range or 100

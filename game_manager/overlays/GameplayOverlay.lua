@@ -9,6 +9,8 @@ local GameplayOverlay = {}
 GameplayOverlay.__index = GameplayOverlay
 setmetatable(GameplayOverlay, PauseOverlay)
 
+local timer_font = love.graphics.newFont("assets/fonts/default.ttf", 30)
+
 function GameplayOverlay:new(scene, actions, paused_gui)
     local obj = PauseOverlay:new(scene, actions, paused_gui or paused)
 
@@ -19,30 +21,37 @@ function GameplayOverlay:new(scene, actions, paused_gui)
     obj.FADEOUT_START = 1.5
     obj.FADEOUT_END = 3
     obj.alpha = 1
+    obj.ending_enabled = true
 
     return setmetatable(obj, self)
 end
 
 function GameplayOverlay:update(dt)
     if self.game_scene:count_live_enemies() == 0 then
-        self.ending_timer = self.ending_timer + dt / util.time_rate
+        if self.ending_enabled then
+            self.ending_timer = self.ending_timer + dt / util.time_rate
 
-        local fade_time = math.min(1, math.max(0, (self.ending_timer - self.FADEOUT_START) / (self.FADEOUT_END - self.FADEOUT_START)))
-        self.alpha = 1 - fade_time
+            local fade_time = math.min(1, math.max(0, (self.ending_timer - self.FADEOUT_START) / (self.FADEOUT_END - self.FADEOUT_START)))
+            self.alpha = 1 - fade_time
 
-        if self.ending_timer > self.ENDING_DURATION then
-            actions.quit()
+            if self.ending_timer > self.ENDING_DURATION then
+                util.camera_shake.x = 0
+                util.camera_shake.y = 0
+                self.actions.finished()
+            end
         end
     else
         self.alpha = 1
         self.ending_timer = 0
+
+        if not self:is_paused() then
+            util.camera_shake.x = 0
+            util.camera_shake.y = 0
+            self.game_timer = self.game_timer + dt / util.time_rate * util.timer_time_rate
+        end
     end
 
     PauseOverlay.update(self, dt)
-
-    if not self:is_paused() then
-        self.game_timer = self.game_timer + dt / util.time_rate * util.timer_time_rate
-    end
 
     self:move_camera_if_player_out_of_bounds(dt)
     self:zoom_based_on_velocity(dt)
@@ -60,10 +69,15 @@ local function format_time(time)
     return string.format("%d:%02d.%02d", minutes, seconds, centiseconds)
 end
 
+local canvas = love.graphics.newCanvas()
+
 function GameplayOverlay:draw()
     local sw, sh = love.graphics.getDimensions()
-    local canvas = love.graphics.newCanvas()
     local prev = love.graphics.getCanvas()
+
+    if canvas:getWidth() ~= sw or canvas:getHeight() ~= sh then
+        canvas = love.graphics.newCanvas()
+    end
 
     love.graphics.setCanvas(canvas)
     love.graphics.clear()
@@ -71,8 +85,7 @@ function GameplayOverlay:draw()
     self.game_scene:draw()
 
     if self.show_timer then
-        local font = love.graphics.newFont("assets/fonts/default.ttf", 30)
-        love.graphics.setFont(font)
+        love.graphics.setFont(timer_font)
         love.graphics.printf(
             format_time(self.game_timer),
             -800,
@@ -145,6 +158,7 @@ function GameplayOverlay:keypressed(key)
     PauseOverlay.keypressed(self, key)
 
     if key == "r" then
+        self.game_timer = 0
         self.game_scene:respawn_players()
     end
 end

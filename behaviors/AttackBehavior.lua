@@ -16,7 +16,6 @@ function AttackBehavior:new(owner)
         attack_path = nil,
         end_animation_timer = 20,
         end_animation_duration = 2.4,
-        time_rate = util.time_rate
     }
 
     return setmetatable(obj, self)
@@ -30,7 +29,7 @@ function AttackBehavior:update(dt)
         local progress = self.end_animation_timer / self.end_animation_duration
         local t = progress * progress
         local MIN_TIME_RATE = 0.001
-        local current_time_rate = util.lerp(MIN_TIME_RATE, self.time_rate, t)
+        local current_time_rate = util.lerp(MIN_TIME_RATE, util.default_time_rate, t)
 
         sounds.slash:setPitch(math.max(0.1, t))
         sounds.slash:setVolume(0.6 + (1 - t) * 0.4)
@@ -40,6 +39,9 @@ function AttackBehavior:update(dt)
         local SHAKE_MAGNITUDE = 20
         util.camera_shake.x = math.random(-1,1) * SHAKE_MAGNITUDE * (1 - progress)
         util.camera_shake.y = math.random(-1,1) * SHAKE_MAGNITUDE * (1 - progress)
+    else 
+        util.camera_shake.x = 0
+        util.camera_shake.y = 0
     end
 end
 
@@ -79,7 +81,6 @@ function AttackBehavior:attack_enemy(enemy)
 
     if #self.owner.scene.obj_by_type["Enemy"] - self.owner.scene:count_dead_enemies() == 1 then
         self.end_animation_timer = 0
-        self.time_rate = util.time_rate
     end
 
     local displacement = self.owner.position:sub(enemy.position)

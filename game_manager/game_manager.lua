@@ -6,6 +6,7 @@ local official_levels_list = require("game_manager.gui.official_levels_list")
 local my_levels_list = require("game_manager.gui.my_levels_list")
 local GameplayOverlay = require("game_manager.overlays.GameplayOverlay")
 local EditorOverlay = require("game_manager.overlays.EditorOverlay")
+local Player = require("game_objects.Player")
 
 local game_manager = {
     current_scene = nil,
@@ -43,18 +44,20 @@ end
 play_scene = function(scene_data)
     local scene = persistance.scene_from_string(scene_data)
 
-    game_manager.current_scene = GameplayOverlay:new(scene, {
-        restart = function()
-            play_scene(scene_data)
-        end,
-        quit = function()
-            go_to_main_menu()
-        end,
+    game_manager.current_scene = LevelConclusionOverlay:new(scene, {
+        quit = go_to_main_menu
     })
 end
 
+
 edit_scene = function(scene_data)
-    local scene = scene_data and persistance.scene_from_string(scene_data) or nil
+    local scene
+    if scene_data then
+        scene = persistance.scene_from_string(scene_data)
+    else
+        scene = Scene:new()
+        scene:add(Player:new())
+    end
 
     local new_scene = EditorOverlay:new(scene, {
         restart = function()
@@ -63,6 +66,8 @@ edit_scene = function(scene_data)
         quit = function()
             go_to_my_levels_list()
         end,
+        finished = function()
+        end
     })
 
     game_manager.current_scene = new_scene
@@ -109,6 +114,12 @@ end
 function game_manager:textinput(t)
     if self.current_scene.textinput then
         self.current_scene:textinput(t)
+    end
+end
+
+function game_manager:resize(w, h)
+    if self.current_scene.resize then
+        self.current_scene:resize(w, h)
     end
 end
 

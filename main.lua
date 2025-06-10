@@ -8,6 +8,7 @@ local game_manager = require("game_manager.game_manager")
 local sounds = require("sounds")
 
 util.time_rate = 0.66
+util.default_time_rate = 0.66
 util.timer_time_rate = 1
 util.global_line_width = 2
 
@@ -112,4 +113,6 @@ end
 
 function love.resize(w, h)
     canvas = love.graphics.newCanvas()
+    game_manager:resize(w, h)
 end
+

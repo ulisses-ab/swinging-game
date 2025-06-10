@@ -9,7 +9,7 @@ setmetatable(TextBox, GameObject)
 
 TextBox.type = "TextBox"
 
-function TextBox:new(position, width, height, text, config)
+function TextBox:new(position, width, height, text, config, font)
     local obj = GameObject:new(position)
 
     obj.width = width
@@ -18,7 +18,8 @@ function TextBox:new(position, width, height, text, config)
     obj.config = config or { }
     obj.config.visible = true
     obj.text = text
-    obj.text_size = 28
+    obj.font = font or love.graphics.newFont("assets/fonts/default.ttf", 24)
+
     return setmetatable(obj, self)
 end
 
@@ -58,11 +59,9 @@ function TextBox:draw()
         return
     end
 
-    local font = love.graphics.newFont("assets/fonts/default.ttf", self.text_size)
-    love.graphics.setFont(font)
-    local font = love.graphics.getFont()
-    local _, lines = font:getWrap(self.text, self.width)
-    local text_height = #lines * font:getHeight()
+    love.graphics.setFont(self.font)
+    local _, lines = self.font:getWrap(self.text, self.width)
+    local text_height = #lines * self.font:getHeight()
     
     love.graphics.printf(
         self.text,

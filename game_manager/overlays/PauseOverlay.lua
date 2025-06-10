@@ -12,7 +12,6 @@ PauseOverlay.type = "PauseOverlay"
 local countdown_font = love.graphics.newFont("assets/fonts/default.ttf", 100)
 
 function PauseOverlay:new(scene, actions, paused_gui)
-    local scene = scene or Scene:new()
     scene.camera_scale = 0.66666
 
     local obj = {
@@ -32,10 +31,6 @@ function PauseOverlay:pause()
     self.paused = self.paused_gui:get_scene({
         continue = function()
             self.paused = nil
-            self.countdown = self.COUNTDOWN_TIME
-        end,
-        restart = function()
-            self.actions.restart()
         end,
         quit = function()
             self.actions.quit()

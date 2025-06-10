@@ -37,6 +37,8 @@ function SelectionFrame:draw()
     )
 
     for _, slider in pairs(self.sliders) do
+        if slider.draw then slider:draw() return end
+        
         local slider_position = slider.position()
         love.graphics.rectangle("fill", slider_position.x - self.slider_size/2, slider_position.y - self.slider_size/2, self.slider_size, self.slider_size)
     end
