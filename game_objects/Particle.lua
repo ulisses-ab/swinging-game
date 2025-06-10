@@ -36,7 +36,7 @@ function Particle:update(dt)
     self.timer = self.timer + dt
 
     if self.timer > self.lifetime then
-        self.remove_object(self)
+        self.scene:remove(self)
     end
 end
 

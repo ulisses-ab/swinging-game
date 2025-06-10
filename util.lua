@@ -2,7 +2,11 @@ local Vec2 = require("Vec2")
 
 local util = {
     scale = 1,
-    global_line_width = 2
+    global_line_width = 2,
+    camera_shake = {
+        x = 0,
+        y = 0,
+    }
 }
 
 local input = {
@@ -176,6 +180,10 @@ function util.ease_out(x, pow)
     x = 1 - x
 
     return math.pow(x, pow)
+end
+
+function util.lerp(a, b, t)
+    return a + (b - a) * t
 end
 
 return util

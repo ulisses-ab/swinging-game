@@ -7,8 +7,8 @@ SelectionFrame.__index = SelectionFrame
 
 local margin = 10
 
-function SelectionFrame:new(owner, delete, show_sliders, notify_dragging)
-    local mx, my = owner:get_mouse_position()
+function SelectionFrame:new(owner, scene, delete, show_sliders, notify_dragging)
+    local mx, my = scene:get_mouse_position()
 
     local obj = {
         owner = owner,
@@ -19,6 +19,7 @@ function SelectionFrame:new(owner, delete, show_sliders, notify_dragging)
         dragging_slider = nil,
         dragging_offset = Vec2:new(mx, my):sub(owner.position),
         is_dragging = false,
+        scene = scene,
     }
 
     obj.sliders = show_sliders and self:get_sliders(owner) or {}
@@ -48,7 +49,7 @@ function SelectionFrame:update(dt)
         util.set_hand_cursor()
     end
 
-    local mx, my = self.owner:get_mouse_position()
+    local mx, my = self.scene:get_mouse_position()
 
     if self.dragging_slider then
         self.dragging_slider.action(mx, my)
@@ -66,7 +67,7 @@ function SelectionFrame:update(dt)
 end
 
 function SelectionFrame:get_hovered_slider()
-    local mx, my = self.owner:get_mouse_position()
+    local mx, my = self.scene:get_mouse_position()
 
     for _, slider in pairs(self.sliders) do
         local slider_position = slider.position()
@@ -109,7 +110,7 @@ function SelectionFrame:keypressed(key)
 end
 
 function SelectionFrame:cursor_is_over_owner()
-    local mx, my = self.owner:get_mouse_position()
+    local mx, my = self.scene:get_mouse_position()
     return util.is_within_margin(Vec2:new(mx, my), self.owner.position, margin + self.owner.width/2, margin + self.owner.height/2)
 end
 

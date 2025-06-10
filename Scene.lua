@@ -8,130 +8,35 @@ Scene.__index = Scene
 function Scene:new(name)
     local obj = {
         objects = {},
-        pivots = {},
-        slingshots = {},
-        platforms = {},
-        players = {},
-        walls = {},
-        enemies = {},
+        obj_by_type = setmetatable({}, {
+            __index = function() return {} end
+        }),
         name = name or "unnamed scene",
         camera_scale = 1,
         camera_translate = Vec2:new(0, 0),
-        frozen = false
+        frozen = false,
+        alpha = 1
     }
 
     return setmetatable(obj, Scene)
 end
 
 function Scene:add(object)
-    object.get_mouse_position = function()
-        return self:get_mouse_position()
-    end
-
-    object.add_object = function(object)
-        self:add(object)
-    end
-
-    object.remove_object = function(object)
-        self:remove(object)
-    end
-
-    
+    object.scene = self
 
     table.insert(self.objects, object)
 
-    local actions = {
-        Pivot = self.add_pivot,
-        Slingshot = self.add_slingshot,
-        Platform = self.add_platform,
-        Player = self.add_player,
-        Wall = self.add_wall,
-        Enemy = self.add_enemy
-    }
-
-    local action = actions[object.type]
-
-    if action then
-        action(self, object)
+    if #self.obj_by_type[object.type] == 0 then
+        self.obj_by_type[object.type] = {object}
+        return
     end
+
+    table.insert(self.obj_by_type[object.type], object)
 end
 
 function Scene:remove(object)
-    for i, obj in ipairs(self.objects) do
-        if obj == object then
-            table.remove(self.objects, i)
-            break
-        end
-    end
-
-    local actions = {
-        Pivot = self.remove_pivot,
-        Slingshot = self.remove_slingshot,
-        Platform = self.remove_platform,
-        Player = self.remove_player,
-        Wall = self.remove_wall,
-        Enemey = self.remove_enemy,
-    }
-
-    local action = actions[object.type]
-
-    if action then
-        action(self, object)
-    end
-end
-
-function Scene:add_pivot(pivot)
-    table.insert(self.pivots, pivot)
-end
-
-function Scene:remove_pivot(pivot)
-    util.remove_obj_in_array(self.pivots, pivot)
-end
-
-function Scene:add_player(player)
-    player:set_get_walls(function() return self.walls end)
-    player:set_get_enemies(function() 
-        return self.enemies 
-    end)
-    table.insert(self.players, player)
-end
-
-function Scene:remove_player(player)
-    util.remove_obj_in_array(self.players, player)
-end
-
-function Scene:add_slingshot(slingshot)
-    table.insert(self.slingshots, slingshot)
-end
-
-function Scene:remove_slingshot(slingshot)
-    util.remove_obj_in_array(self.slingshots, slingshot)
-end
-
-function Scene:add_platform(platform)
-    table.insert(self.platforms, platform)
-end
-
-function Scene:remove_platform(platform)
-    util.remove_obj_in_array(self.platforms, platform)
-end
-
-function Scene:add_wall(wall)
-    table.insert(self.walls, wall)
-    self:add_platform(wall)
-end
-
-function Scene:remove_wall(wall)
-    util.remove_obj_in_array(self.walls, wall)
-    self:remove_platform(wall)
-end
-
-function Scene:add_enemy(enemy)
-    table.insert(self.enemies, enemy)
-end
-
-function Scene:remove_enemy(enemy)
-    util.remove_obj_in_array(self.enemies, enemy)
+    util.remove_obj_in_array(self.objects, object)
+    util.remove_obj_in_array(self.obj_by_type[object.type], object)
 end
 
 function Scene:update(dt)
@@ -144,10 +49,6 @@ function Scene:update(dt)
             object:update(dt)
         end
     end
-
-    self:check_pivot_collision()
-    self:check_slingshot_collision()
-    self:check_platform_collision()
 end
 
 function Scene:frozen_update(dt)
@@ -174,10 +75,13 @@ function Scene:get_mouse_position()
     return self:translate_xy(x, y)
 end
 
-function Scene:draw()    
-    love.graphics.push()
-    love.graphics.scale(self.camera_scale, self.camera_scale)
-    love.graphics.translate(self.camera_translate.x, self.camera_translate.y)
+function Scene:draw()
+    local sw, sh = love.graphics.getDimensions()
+    local canvas = love.graphics.newCanvas()
+    local prev = love.graphics.getCanvas()
+
+    love.graphics.setCanvas(canvas)
+    love.graphics.clear()
 
     table.sort(self.objects, function(a, b)
         return (a.z or 0) < (b.z or 0)
@@ -189,6 +93,14 @@ function Scene:draw()
         end
     end
 
+    love.graphics.setCanvas(prev)
+
+    love.graphics.push()
+    love.graphics.scale(self.camera_scale, self.camera_scale)
+    love.graphics.translate(self.camera_translate.x-sw/2, self.camera_translate.y-sh/2)
+    love.graphics.setColor(1, 1, 1, self.alpha)
+    love.graphics.draw(canvas)
+    love.graphics.setColor(1, 1, 1, 1)
     love.graphics.pop()
 end
 
@@ -246,66 +158,8 @@ function Scene:textinput(t)
     end
 end
 
-function Scene:check_pivot_collision()
-    for _, player in ipairs(self.players) do
-        local found = false 
-
-        for _, pivot in ipairs(self.pivots) do
-            if util.circular_collision(player.position, pivot.position, pivot.range) then
-                player:set_near_pivot(pivot)
-                found = true
-                break
-            end
-        end
-
-        if not found then
-            player:reset_near_pivot()
-        end
-    end
-end
-
-function Scene:check_slingshot_collision()
-    for _, player in ipairs(self.players) do
-        local found = false
-
-        for _, slingshot in ipairs(self.slingshots) do
-            if util.is_inside_rectangle(player.position, slingshot:rect_position(), slingshot.rect_size) then
-                found = true
-                player:set_near_slingshot(slingshot)
-                break
-            end
-        end
-
-        if not found then
-            player:reset_near_slingshot()
-        end
-    end
-end
-
-function Scene:check_platform_collision()
-    for _, player in ipairs(self.players) do
-        for _, platform in ipairs(self.platforms) do
-            if 
-                (platform:is_above(player.last_position:add(player:center_to_bottom_vec()), player.width / 2 - 2) and
-                platform:is_below(player.position:add(player:center_to_bottom_vec()), player.width / 2 - 2)) or
-                (platform:is_right_above(player.position:add(player:center_to_bottom_vec()), player.width / 2 - 2) and
-                player.velocity.y > 0)
-            then
-                player:set_platform(platform)
-                break
-            end
-        end
-    end
-end
-
-function Scene:object_remover()
-    return function(object)
-        self:remove(object)
-    end
-end
-
 function Scene:respawn_players()
-    for _, player in ipairs(self.players) do
+    for _, player in ipairs(self.obj_by_type["Player"]) do
         player:respawn()
     end
 
@@ -313,15 +167,25 @@ function Scene:respawn_players()
 end
 
 function Scene:respawn_enemies()
-    for _, enemy in ipairs(self.enemies) do
+    for _, enemy in ipairs(self.obj_by_type["Enemy"]) do
         enemy:respawn()
     end
 end
 
 function Scene:set_player_spawns()
-    for _, player in ipairs(self.players) do
+    for _, player in ipairs(self.obj_by_type["Player"]) do
         player.spawn_position = player.position
     end
+end
+
+function Scene:count_dead_enemies()
+    local counter = 0
+    for _, enemy in ipairs(self.obj_by_type["Enemy"]) do
+        if enemy.dead then 
+            counter = counter + 1
+        end
+    end
+    return counter
 end
 
 return Scene

@@ -53,12 +53,12 @@ function Enemy:draw()
     end
 
     local square_size_1 = 4*self.width
-    love.graphics.setColor(1, 0, 0, 0.5 * alpha)
+    love.graphics.setColor(1, 0, 0, 0.3 * alpha)
     util.draw_rotated_rectangle("fill", self.position.x, self.position.y, square_size_1, square_size_1, self.rotation)
 
 
     local square_size_2 = 2*self.width
-    love.graphics.setColor(1, 0, 0, 0.5 * alpha)
+    love.graphics.setColor(1, 0, 0, 0.3 * alpha)
     util.draw_rotated_rectangle("fill", self.position.x, self.position.y, square_size_2, square_size_2, self.rotation)
 
 
@@ -78,7 +78,7 @@ function Enemy:die()
         local velocity = Vec2:new(math.cos(angle), math.sin(angle)):mul(math.random(300, 1500))
         local size = math.random(10, 22)
         local particle = Particle:new(self.position:copy(), size, velocity, {})
-        self.add_object(particle)
+        self.scene:add(particle)
     end
 end
 

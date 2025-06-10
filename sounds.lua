@@ -14,6 +14,4 @@ sounds.SR20DET:setVolume(0.1)
 sounds.platform_fall:setVolume(1)
 sounds.slash:setVolume(0.6)
 
-
-
 return sounds

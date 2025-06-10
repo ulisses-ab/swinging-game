@@ -48,7 +48,7 @@ function love.draw()
     love.graphics.clear()
 
     love.graphics.push()
-    love.graphics.translate(love.graphics.getWidth() / 2, love.graphics.getHeight() / 2)
+    love.graphics.translate(love.graphics.getWidth() / 2 + util.camera_shake.x, love.graphics.getHeight() / 2 + util.camera_shake.y)
     love.graphics.setColor(1,1,1)
     love.graphics.setLineWidth(util.global_line_width)
     love.graphics.scale(util.scale, util.scale)

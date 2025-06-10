@@ -143,6 +143,7 @@ function editor_mode:make_selection_frame(object, show_sliders)
 
     return SelectionFrame:new(
         object, 
+        self.editing_scene,
         function(obj)
             self.selection_frames = {}
             self.editing_scene:remove(obj)

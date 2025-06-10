@@ -49,18 +49,29 @@ function GameplayOverlay:draw()
         love.graphics.setFont(font)
         love.graphics.printf(
             format_time(self.game_timer),
-            -400,
+            -800,
             -320,
-            800, --width
-            "center"
+            780, --width
+            "right"
         )
+
+        love.graphics.setColor(1,0,0)
+        love.graphics.printf(
+            self.game_scene:count_dead_enemies() .. "/" .. #self.game_scene.obj_by_type["Enemy"],
+            20,
+            -320,
+            780, --width
+            "left"
+        )
+        love.graphics.setColor(1,1,1)
     end
 
     self:draw_pause()
 end
 
 function GameplayOverlay:move_camera_if_player_out_of_bounds(dt)
-    local player = self.game_scene.players[1]
+    local player = self.game_scene.obj_by_type["Player"][1]
+    
     if not player then return end
 
     local absolute_player_pos = player.position:add(self.game_scene.camera_translate):mul(self.game_scene.camera_scale)
@@ -77,10 +88,10 @@ function GameplayOverlay:move_camera_if_player_out_of_bounds(dt)
 end
 
 function GameplayOverlay:zoom_based_on_velocity(dt)
-    local player = self.game_scene.players[1]
+    local player = self.game_scene.obj_by_type["Player"][1]
     if not player then return end
 
-    local MIN_SCALE = 0.3
+    local MIN_SCALE = 0.45
     local MAX_SCALE = 1.1
     local SCALE_COEFFICIENT = 0.001
     local ZOOMING_VELOCITY = 0.5

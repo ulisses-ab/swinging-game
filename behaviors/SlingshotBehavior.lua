@@ -53,6 +53,8 @@ function SlingshotBehavior:try_detaching()
 end
 
 function SlingshotBehavior:update(dt)
+    self:check_collision()
+
     if not self:is_attached() then
         return
     end
@@ -80,5 +82,17 @@ function SlingshotBehavior:draw()
     self.draw_line(self.owner.position, self.attached_slingshot.position)
 end
 
+function SlingshotBehavior:check_collision()
+    local player = self.owner 
+
+    for _, slingshot in ipairs(player.scene.obj_by_type["Slingshot"]) do
+        if util.is_inside_rectangle(player.position, slingshot:rect_position(), slingshot.rect_size) then
+            self:set_near_slingshot(slingshot)
+            return
+        end
+    end
+
+    self:reset_near_slingshot()
+end
 
 return SlingshotBehavior

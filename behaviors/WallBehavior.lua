@@ -12,7 +12,6 @@ WallBehavior.fall_sound = sounds.platform_fall
 function WallBehavior:new(owner)
     local obj = {
         owner = owner,
-        get_walls = nil,
     }
 
     return setmetatable(obj, self)
@@ -32,12 +31,8 @@ function WallBehavior:is_outside(wall, pos)
         self:is_y_outside(wall, pos.y)
 end
 
-function WallBehavior:set_get_walls(get_walls)
-    self.get_walls = get_walls
-end
-
 function WallBehavior:update(dt)
-    for _, wall in ipairs(self:get_walls()) do
+    for _, wall in ipairs(self.owner.scene.obj_by_type["Wall"]) do
         local owner = self.owner 
         local displacement = owner.position:sub(wall.position)
 

@@ -124,14 +124,6 @@ function Player:mousereleased(x, y, button, istouch, presses)
     self.controller:mousereleased(x, y, button, istouch, presses)
 end
 
-function Player:set_near_pivot(pivot)
-    self.pivot_behavior:set_near_pivot(pivot)
-end
-
-function Player:reset_near_pivot()
-    self.pivot_behavior:reset_near_pivot()
-end
-
 function Player:set_near_slingshot(slingshot)
     self.slingshot_behavior:set_near_slingshot(slingshot)
 end
@@ -148,14 +140,6 @@ end
 
 function Player:reset_platform()
     self.platform_behavior:reset_platform()
-end
-
-function Player:set_get_walls(get_walls)
-    self.wall_behavior:set_get_walls(get_walls)
-end
-
-function Player:set_get_enemies(get_enemies)
-    self.attack_behavior:set_get_enemies(get_enemies)
 end
 
 return Player

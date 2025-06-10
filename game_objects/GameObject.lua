@@ -15,9 +15,7 @@ function GameObject:new(position, velocity, acceleration)
         last_position = position and position:copy() or Vec2:new(0, 0),
         width = 10,
         height = 10,
-        get_mouse_position = love.mouse.getPosition,
-        remove_object = function() end,
-        add_object = function() end
+        scene = nil,
     }, self)
 
     return obj

@@ -60,6 +60,8 @@ function PivotBehavior:is_rope_extended()
 end
 
 function PivotBehavior:update(dt) 
+    self:check_collision()
+
     if not self:is_attached() then
         return
     end
@@ -127,6 +129,19 @@ function PivotBehavior:draw()
     end
     
     self.draw_line(self.owner.position, self.attached_pivot.position)
+end
+
+function PivotBehavior:check_collision()
+    local player = self.owner
+
+    for _, pivot in ipairs(player.scene.obj_by_type["Pivot"]) do
+        if util.circular_collision(player.position, pivot.position, pivot.range) then
+            self:set_near_pivot(pivot)
+            return
+        end
+    end
+
+    self:reset_near_pivot()
 end
 
 return PivotBehavior
