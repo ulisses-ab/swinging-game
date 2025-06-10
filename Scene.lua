@@ -76,12 +76,9 @@ function Scene:get_mouse_position()
 end
 
 function Scene:draw()
-    local sw, sh = love.graphics.getDimensions()
-    local canvas = love.graphics.newCanvas()
-    local prev = love.graphics.getCanvas()
-
-    love.graphics.setCanvas(canvas)
-    love.graphics.clear()
+    love.graphics.push()
+    love.graphics.scale(self.camera_scale, self.camera_scale)
+    love.graphics.translate(self.camera_translate.x, self.camera_translate.y)
 
     table.sort(self.objects, function(a, b)
         return (a.z or 0) < (b.z or 0)
@@ -93,14 +90,6 @@ function Scene:draw()
         end
     end
 
-    love.graphics.setCanvas(prev)
-
-    love.graphics.push()
-    love.graphics.scale(self.camera_scale, self.camera_scale)
-    love.graphics.translate(self.camera_translate.x-sw/2, self.camera_translate.y-sh/2)
-    love.graphics.setColor(1, 1, 1, self.alpha)
-    love.graphics.draw(canvas)
-    love.graphics.setColor(1, 1, 1, 1)
     love.graphics.pop()
 end
 
@@ -186,6 +175,10 @@ function Scene:count_dead_enemies()
         end
     end
     return counter
+end
+
+function Scene:count_live_enemies()
+    return #self.obj_by_type["Enemy"] - self:count_dead_enemies()
 end
 
 return Scene

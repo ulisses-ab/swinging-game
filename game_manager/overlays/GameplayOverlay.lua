@@ -14,11 +14,30 @@ function GameplayOverlay:new(scene, actions, paused_gui)
 
     obj.game_timer = 0
     obj.show_timer = true
+    obj.ending_timer = 0
+    obj.ENDING_DURATION = 3.6
+    obj.FADEOUT_START = 1.5
+    obj.FADEOUT_END = 3
+    obj.alpha = 1
 
     return setmetatable(obj, self)
 end
 
 function GameplayOverlay:update(dt)
+    if self.game_scene:count_live_enemies() == 0 then
+        self.ending_timer = self.ending_timer + dt / util.time_rate
+
+        local fade_time = math.min(1, math.max(0, (self.ending_timer - self.FADEOUT_START) / (self.FADEOUT_END - self.FADEOUT_START)))
+        self.alpha = 1 - fade_time
+
+        if self.ending_timer > self.ENDING_DURATION then
+            actions.quit()
+        end
+    else
+        self.alpha = 1
+        self.ending_timer = 0
+    end
+
     PauseOverlay.update(self, dt)
 
     if not self:is_paused() then
@@ -42,6 +61,13 @@ local function format_time(time)
 end
 
 function GameplayOverlay:draw()
+    local sw, sh = love.graphics.getDimensions()
+    local canvas = love.graphics.newCanvas()
+    local prev = love.graphics.getCanvas()
+
+    love.graphics.setCanvas(canvas)
+    love.graphics.clear()
+
     self.game_scene:draw()
 
     if self.show_timer then
@@ -66,12 +92,23 @@ function GameplayOverlay:draw()
         love.graphics.setColor(1,1,1)
     end
 
+    love.graphics.setCanvas(prev)
+
+    love.graphics.push()
+    love.graphics.scale(self.camera_scale, self.camera_scale)
+    love.graphics.translate(-sw/2, -sh/2)
+    love.graphics.setColor(1, 1, 1, self.alpha)
+    love.graphics.draw(canvas)
+    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.pop()
+
     self:draw_pause()
 end
 
+
 function GameplayOverlay:move_camera_if_player_out_of_bounds(dt)
     local player = self.game_scene.obj_by_type["Player"][1]
-    
+
     if not player then return end
 
     local absolute_player_pos = player.position:add(self.game_scene.camera_translate):mul(self.game_scene.camera_scale)
