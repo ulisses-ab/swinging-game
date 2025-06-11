@@ -1,26 +1,30 @@
 local util = require("util")
-local Bullet = require("game_objects.Bullet")
 local Vec2 = require("Vec2")
+local Updater = require("Updater")
 
 local Scene = {}
 Scene.__index = Scene
+setmetatable(Scene, Updater)
 
 function Scene:new(name)
-    local obj = {
-        objects = {},
-        obj_by_type = setmetatable({}, {
-            __index = function() return {} end
-        }),
-        name = name or "unnamed scene",
-        camera_scale = 1,
-        camera_translate = Vec2:new(0, 0),
-        frozen = false,
-    }
+    local obj = Updater:new()
+
+    obj.objects = {}
+    obj.obj_by_type = setmetatable({}, {
+        __index = function() return {} end
+    })
+    obj.name = name or "unnamed scene"
+    obj.camera_scale = 1
+    obj.camera_translate = Vec2:new(0, 0)
+    obj.time_rate = 1
+    obj.scene = nil
 
     return setmetatable(obj, Scene)
 end
 
 function Scene:add(object)
+    self:add_updatable(object)
+
     object.scene = self
 
     table.insert(self.objects, object)
@@ -36,6 +40,8 @@ function Scene:add(object)
 end
 
 function Scene:remove(object)
+    self:remove_updatable(object)
+
     util.remove_obj_in_array(self.objects, object)
 
     if not object.type then return end
@@ -44,39 +50,8 @@ function Scene:remove(object)
 end
 
 function Scene:update(dt)
-    self:frozen_update(dt)
-
-    if self.frozen then return end
-
-    for _, object in ipairs(self.objects) do
-        if object.update then
-            object:update(dt)
-        end
-    end
-end
-
-function Scene:frozen_update(dt)
-    for _, object in ipairs(self.objects) do
-        if object.frozen_update then
-            object:frozen_update(dt)
-        end
-    end
-end
-
-function Scene:translate_xy(x, y)
-    x = x / self.camera_scale
-    y = y / self.camera_scale
-    x = x - self.camera_translate.x
-    y = y - self.camera_translate.y
-
-    return x, y
-end
-
-function Scene:get_mouse_position()
-    x, y = love.mouse.getPosition()
-    x = x - love.graphics.getWidth() / 2 
-    y = y - love.graphics.getHeight() / 2
-    return self:translate_xy(x, y)
+    dt = dt * self.time_rate
+    Updater.update(self, dt)
 end
 
 function Scene:draw()
@@ -97,92 +72,54 @@ function Scene:draw()
     love.graphics.pop()
 end
 
-function Scene:keypressed(key)
-    if self.frozen then return end
+function Scene:translate_xy(x, y)
+    x = x / self.camera_scale
+    y = y / self.camera_scale
+    x = x - self.camera_translate.x
+    y = y - self.camera_translate.y
 
-    for _, object in ipairs(self.objects) do
-        if object.keypressed then
-            object:keypressed(key)
-        end
-    end
+    return x, y
 end
 
-function Scene:keyreleased(key)
-    if self.frozen then return end
-
-    for _, object in ipairs(self.objects) do
-        if object.keyreleased then
-            object:keyreleased(key)
-        end
+function Scene:get_mouse_position()
+    local x, y
+    if type(self.scene) == "table" then
+        x, y = self.scene:get_mouse_position()
+    else
+        x, y = love.mouse.getPosition()
     end
+
+    x = x - love.graphics.getWidth() / 2 
+    y = y - love.graphics.getHeight() / 2
+    return self:translate_xy(x, y)
 end
 
-function Scene:mousepressed(x, y, button, istouch, presses)
-    if self.frozen then return end
+function Scene:get_absolute_translate()
+    if self.scene then
+        return self.camera_translate:add(self.scene:get_absolute_translate()):mul(self:get_absolute_scale())
+    end
 
+    return self.camera_translate
+end
+
+function Scene:get_absolute_scale()
+    if self.scene then
+        return self.camera_scale * self.scene:get_absolute_scale()
+    end
+
+    return self.camera_scale
+end
+
+function Scene:mousepressed(x, y, ...)
     x, y = self:translate_xy(x, y)
 
-    for _, object in ipairs(self.objects) do
-        if object.mousepressed then
-            object:mousepressed(x, y, button, istouch, presses)
-        end
-    end
+    Updater.mousepressed(self, x, y, ...)
 end
 
-function Scene:mousereleased(x, y, button, istouch, presses)
-    if self.frozen then return end
-
+function Scene:mousereleased(x, y, ...)
     x, y = self:translate_xy(x, y)
 
-    for _, object in ipairs(self.objects) do
-        if object.mousereleased then
-            object:mousereleased(x, y, button, istouch, presses)
-        end
-    end
-end
-
-function Scene:textinput(t)
-    if self.frozen then return end
-
-    for _, object in ipairs(self.objects) do
-        if object.textinput then
-            object:textinput(t)
-        end
-    end
-end
-
-function Scene:respawn_players()
-    for _, player in ipairs(self.obj_by_type["Player"]) do
-        player:respawn()
-    end
-
-    self:respawn_enemies()
-end
-
-function Scene:respawn_enemies()
-    for _, enemy in ipairs(self.obj_by_type["Enemy"]) do
-        enemy:respawn()
-    end
-end
-
-function Scene:set_player_spawns()
-    for _, player in ipairs(self.obj_by_type["Player"]) do
-        player.spawn_position = player.position
-    end
-end
-
-function Scene:count_dead_enemies()
-    local counter = 0
-    for _, enemy in ipairs(self.obj_by_type["Enemy"]) do
-        if enemy.dead then 
-            counter = counter + 1
-        end
-    end
-    return counter
-end
-
-function Scene:count_live_enemies()
-    return #self.obj_by_type["Enemy"] - self:count_dead_enemies()
+    Updater.mousereleased(self, x, y, ...)
 end
 
 return Scene

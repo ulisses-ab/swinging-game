@@ -57,18 +57,6 @@ function GameplayOverlay:update(dt)
     self:zoom_based_on_velocity(dt)
 end
 
-local function format_time(time)
-    local minutes = math.floor(time / 60)
-    local seconds = math.floor(time % 60)
-    local centiseconds = math.floor((time * 100) % 100)
-
-    if minutes == 0 then
-        return string.format("%d.%02d", seconds, centiseconds)
-    end
-
-    return string.format("%d:%02d.%02d", minutes, seconds, centiseconds)
-end
-
 local canvas = love.graphics.newCanvas()
 
 function GameplayOverlay:draw()
@@ -118,45 +106,7 @@ function GameplayOverlay:draw()
     self:draw_pause()
 end
 
-
-function GameplayOverlay:move_camera_if_player_out_of_bounds(dt)
-    local player = self.game_scene.obj_by_type["Player"][1]
-
-    if not player then return end
-
-    local absolute_player_pos = player.position:add(self.game_scene.camera_translate):mul(self.game_scene.camera_scale)
-
-    local CORRECTION_SPEED = 8
-
-    local x_limit = 150
-    local x_correct = math.max(0, math.abs(absolute_player_pos.x) - x_limit) * util.sign(absolute_player_pos.x) * dt * CORRECTION_SPEED
-
-    local y_limit = 100
-    local y_correct = math.max(0, math.abs(absolute_player_pos.y) - y_limit) * util.sign(absolute_player_pos.y) * dt * CORRECTION_SPEED
-
-    self.game_scene.camera_translate = self.game_scene.camera_translate:sub(Vec2:new(x_correct, y_correct))
-end
-
-function GameplayOverlay:zoom_based_on_velocity(dt)
-    local player = self.game_scene.obj_by_type["Player"][1]
-    if not player then return end
-
-    local MIN_SCALE = 0.45
-    local MAX_SCALE = 1.1
-    local SCALE_COEFFICIENT = 0.001
-    local ZOOMING_VELOCITY = 0.5
-
-    local target_scale = MAX_SCALE - player.velocity:length() * SCALE_COEFFICIENT * (MAX_SCALE - MIN_SCALE)
-
-    local target_scale = math.min(MAX_SCALE, math.max(target_scale, MIN_SCALE))
-
-    local current_scale = self.game_scene.camera_scale
-    self.game_scene.camera_scale = current_scale + (target_scale - current_scale) * ZOOMING_VELOCITY * dt
-end
-
 function GameplayOverlay:keypressed(key)
-    PauseOverlay.keypressed(self, key)
-
     if key == "r" then
         self.game_timer = 0
         self.game_scene:respawn_players()
