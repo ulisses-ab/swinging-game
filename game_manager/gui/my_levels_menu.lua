@@ -16,8 +16,8 @@ return function(actions, file_names)
 
     local share_time = -10
 
-    local exit_button = Button:new(Vec2:new(-350, -150), 60, 60, "←", actions.exit)
-    exit_button.z = 2
+    local quit_button = Button:new(Vec2:new(-350, -150), 60, 60, "←", actions.quit)
+    quit_button.z = 2
     local add_button = Button:new(Vec2:new(320, -150), 200, 60, "criar", actions.create)
     add_button.z = 2
 
@@ -33,7 +33,7 @@ return function(actions, file_names)
         love.graphics.line(-500, self.position.y + self.height/2, 500, self.position.y + self.height/2)
     end
 
-    scene:add(exit_button)
+    scene:add(quit_button)
     scene:add(add_button)
     scene:add(cover)
 
@@ -84,7 +84,7 @@ return function(actions, file_names)
         end
     end
 
-    for i, file in ipairs(items) do
+    for i, file in ipairs(file_names) do
         local button = Button:new(Vec2:new(-300, y_start + (i-1) * y_offset), 950, 60, file, function()
             actions.play(file)
         end)

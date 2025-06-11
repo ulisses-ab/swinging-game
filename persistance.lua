@@ -31,7 +31,6 @@ function persistance.scene_from_string(string)
     
     local compressed = love.data.decode("string", "base64", string)
     local json_data = love.data.decompress("string", "zlib", compressed)
-    print(json_data)
     local data = json.decode(json_data)
 
     for _, obj_data in ipairs(data.objects) do

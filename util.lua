@@ -211,4 +211,10 @@ function util.draw_star(filltype, x, y, outer_radius, inner_radius, points, angl
     love.graphics.polygon(filltype, vertices)
 end
 
+function util.draw_clear()
+    local cover_size = 1000000
+
+    love.graphics.rectangle("fill", -cover_size/2, -cover_size/2, cover_size, cover_size) 
+end
+
 return util

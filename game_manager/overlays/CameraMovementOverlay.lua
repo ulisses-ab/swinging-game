@@ -1,5 +1,7 @@
-local Overlay = require("Overlay")
+local Overlay = require("game_manager.overlays.Overlay")
 local Scene = require("Scene")
+local util = require("util")
+local Vec2 = require("Vec2")
 
 local CameraMovementOverlay = {}
 CameraMovementOverlay.__index = CameraMovementOverlay
@@ -14,7 +16,10 @@ function CameraMovementOverlay:new(wrapped, base_scene)
 end
 
 function CameraMovementOverlay:update(dt)
-    scene:update(dt)
+    Overlay.update(self, dt)
+
+    self:zoom_based_on_velocity(dt)
+    self:move_camera_if_player_out_of_bounds(dt)
 end
 
 function CameraMovementOverlay:zoom_based_on_velocity(dt)
@@ -30,17 +35,19 @@ function CameraMovementOverlay:zoom_based_on_velocity(dt)
 
     local target_scale = math.min(MAX_SCALE, math.max(target_scale, MIN_SCALE))
 
-    local current_scale = self.scene.camera_scale
-    self.scene.camera_scale = current_scale + (target_scale - current_scale) * ZOOMING_VELOCITY * dt
+    self.camera_scale = self.camera_scale + (target_scale - self.camera_scale) * ZOOMING_VELOCITY * dt
 end
 
 function CameraMovementOverlay:move_camera_if_player_out_of_bounds(dt)
     local player = self.base_scene.obj_by_type["Player"][1]
     if not player then return end
 
-    local absolute_player_pos = player.position:add(base_scene:get_absolute_translate()):mul(base_scene:get_absolute_scale())
 
-    local CORRECTION_SPEED = 8
+    local absolute_translate = self.base_scene:get_absolute_translate()
+    local absolute_scale = self.base_scene:get_absolute_scale()
+    local absolute_player_pos = absolute_translate:add(player.position:mul(absolute_scale))
+
+    local CORRECTION_SPEED = 4
 
     local x_limit = 150
     local x_correct = math.max(0, math.abs(absolute_player_pos.x) - x_limit) * util.sign(absolute_player_pos.x) * dt * CORRECTION_SPEED
@@ -48,7 +55,9 @@ function CameraMovementOverlay:move_camera_if_player_out_of_bounds(dt)
     local y_limit = 100
     local y_correct = math.max(0, math.abs(absolute_player_pos.y) - y_limit) * util.sign(absolute_player_pos.y) * dt * CORRECTION_SPEED
 
-    self.scene.camera_translate = self.scene.camera_translate:sub(Vec2:new(x_correct, y_correct))
+
+    local parent_scale = self.scene and self.scene:get_absolute_scale() or 1
+    self.camera_translate = self.camera_translate:sub(Vec2:new(x_correct, y_correct):div(parent_scale))
 end
 
 return CameraMovementOverlay

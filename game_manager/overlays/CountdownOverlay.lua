@@ -1,5 +1,6 @@
-local Overlay = require("Overlay")
+local Overlay = require("game_manager.overlays.Overlay")
 local Scene = require("Scene")
+local util = require("util")
 
 local CountdownOverlay = {}
 CountdownOverlay.__index = CountdownOverlay
@@ -15,21 +16,30 @@ function CountdownOverlay:new(wrapped)
 end
 
 function CountdownOverlay:update(dt)
-    self.timer = self.timer + dt
+    self.timer = self.timer - dt
 
     if self.timer < 0 then
         self.updates_active = true
     end
+
+    Overlay.update(self, dt)
 end
 
 function CountdownOverlay:draw()
-    self.scene:draw()
+    self.wrapped:draw()
 
-    love.graphics.clear(0, 0, 0, 0.2)
+    if self.timer > 0 then
+        self:draw_countdown()
+    end
+end
+
+function CountdownOverlay:draw_countdown()
+    love.graphics.setColor(0, 0, 0, 0.2)
+    util.draw_clear()
     love.graphics.setColor(1,1,1,1)
     love.graphics.setFont(self.font)
     love.graphics.printf(
-        math.ceil(self.timer)+1,
+        math.ceil(self.timer),
         -50,
         -50,
         100,
@@ -41,7 +51,6 @@ function CountdownOverlay:start_countdown(time)
     time = time or 3
 
     self.timer = time
-
     self.updates_active = false
 end
 

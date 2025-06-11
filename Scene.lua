@@ -18,6 +18,7 @@ function Scene:new(name)
     obj.camera_translate = Vec2:new(0, 0)
     obj.time_rate = 1
     obj.scene = nil
+    obj.type = "Scene"
 
     return setmetatable(obj, Scene)
 end
@@ -37,6 +38,16 @@ function Scene:add(object)
     end
 
     table.insert(self.obj_by_type[object.type], object)
+
+    if object.on_add_to_scene then
+        object:on_add_to_scene(self)
+    end
+end
+
+function Scene:remove_all()
+    for _, obj in ipairs(self.objects) do
+        self:remove(obj)
+    end
 end
 
 function Scene:remove(object)
@@ -47,6 +58,10 @@ function Scene:remove(object)
     if not object.type then return end
 
     util.remove_obj_in_array(self.obj_by_type[object.type], object)
+
+    if object.on_remove_from_scene then
+        object:on_remove_from_scene(self)
+    end
 end
 
 function Scene:update(dt)
@@ -56,8 +71,8 @@ end
 
 function Scene:draw()
     love.graphics.push()
-    love.graphics.scale(self.camera_scale, self.camera_scale)
     love.graphics.translate(self.camera_translate.x, self.camera_translate.y)
+    love.graphics.scale(self.camera_scale, self.camera_scale)
 
     table.sort(self.objects, function(a, b)
         return (a.z or 0) < (b.z or 0)
@@ -73,33 +88,35 @@ function Scene:draw()
 end
 
 function Scene:translate_xy(x, y)
-    x = x / self.camera_scale
-    y = y / self.camera_scale
     x = x - self.camera_translate.x
     y = y - self.camera_translate.y
+    x = x / self.camera_scale
+    y = y / self.camera_scale
 
     return x, y
 end
 
 function Scene:get_mouse_position()
     local x, y
+
     if type(self.scene) == "table" then
         x, y = self.scene:get_mouse_position()
     else
         x, y = love.mouse.getPosition()
+        x = x - love.graphics.getWidth()/2
+        y = y - love.graphics.getHeight()/2
     end
 
-    x = x - love.graphics.getWidth() / 2 
-    y = y - love.graphics.getHeight() / 2
-    return self:translate_xy(x, y)
+    x, y = self:translate_xy(x, y)
+    return x, y
 end
 
 function Scene:get_absolute_translate()
     if self.scene then
-        return self.camera_translate:add(self.scene:get_absolute_translate()):mul(self:get_absolute_scale())
+        return self.scene:get_absolute_translate():add(self.camera_translate:mul(self.scene:get_absolute_scale()))
     end
 
-    return self.camera_translate
+    return self.camera_translate:copy()
 end
 
 function Scene:get_absolute_scale()
@@ -110,14 +127,14 @@ function Scene:get_absolute_scale()
     return self.camera_scale
 end
 
-function Scene:mousepressed(x, y, ...)
-    x, y = self:translate_xy(x, y)
+function Scene:mousepressed(...)
+    x, y = self:get_mouse_position()
 
     Updater.mousepressed(self, x, y, ...)
 end
 
-function Scene:mousereleased(x, y, ...)
-    x, y = self:translate_xy(x, y)
+function Scene:mousereleased(...)
+    x, y = self:get_mouse_position()
 
     Updater.mousereleased(self, x, y, ...)
 end

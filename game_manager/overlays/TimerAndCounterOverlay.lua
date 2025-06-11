@@ -1,21 +1,53 @@
 local Scene = require("Scene")
 local Vec2 = require("Vec2")
 local util = require("util")
+local Overlay = require("game_manager.overlays.Overlay")
+local EventBus = require("EventBus")
 
 local TimerAndCounterOverlay = {}
 TimerAndCounterOverlay.__index = TimerAndCounterOverlay
+setmetatable(TimerAndCounterOverlay, Overlay)
 
 function TimerAndCounterOverlay:new(wrapped, base_scene)
     local obj = Overlay:new(wrapped)
 
     obj.base_scene = base_scene
+    obj.font = love.graphics.newFont("assets/fonts/default.ttf", 32)
+    obj.timer = 0
+    obj.dead_counter = 0
+
+    EventBus:listen("PlayerRespawn", function()
+       obj:reset() 
+    end)
+
+    EventBus:listen("EnemyDeath", function()
+        obj:on_enemy_death()
+    end)
 
     return setmetatable(obj, self)
 end
 
-function TimerAndCounterOverlay:draw()
-    self.scene:draw()
+function TimerAndCounterOverlay:on_enemy_death()
+    self.dead_counter = self.dead_counter + 1
+end
 
+function TimerAndCounterOverlay:reset()
+    self.timer = 0
+    self.dead_counter = 0
+end
+
+function TimerAndCounterOverlay:update(dt)
+    Overlay.update(self, dt)
+
+    if self.dead_counter ~= #self.base_scene.obj_by_type["Enemy"] then
+        self.timer = self.timer + dt
+    end
+end
+
+function TimerAndCounterOverlay:draw()
+    Overlay.draw(self)
+
+    love.graphics.setFont(self.font)
     self:draw_timer()
     self:draw_counter()
 end
@@ -33,9 +65,8 @@ local function format_time(time)
 end
 
 function TimerAndCounterOverlay:draw_timer()
-    love.graphics.setFont(timer_font)
     love.graphics.printf(
-        format_time(self.game_timer),
+        format_time(self.timer),
         -800,
         -320,
         780, --width
@@ -43,22 +74,10 @@ function TimerAndCounterOverlay:draw_timer()
     )
 end
 
-local function count_dead_enemies(scene)
-    local count = 0
-
-    for _, enemy in ipairs(scene.obj_by_type["Enemy"]) do
-        if enemy.dead then
-            count = count + 1
-        end
-    end
-
-    return count
-end
-
 function TimerAndCounterOverlay:draw_counter()
     love.graphics.setColor(1,0,0)
     love.graphics.printf(
-        count_dead_enemies(self.base_scene) .. "/" .. #self.base_scene.obj_by_type["Enemy"],
+        self.dead_counter .. "/" .. #self.base_scene.obj_by_type["Enemy"],
         20,
         -320,
         780, --width

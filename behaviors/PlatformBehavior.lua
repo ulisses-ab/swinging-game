@@ -14,8 +14,8 @@ function PlatformBehavior:new(owner)
         owner = owner,
         platform = nil,
         on_land = nil,
-        just_went_down = nil,
-        go_down_timer = 0,
+        just_reset = nil,
+        reset_timer = 0,
     }
 
     return setmetatable(obj, self)
@@ -29,14 +29,12 @@ function PlatformBehavior:try_going_down()
     if not self.platform then return end
     if self.platform.type == "Wall" then return end
 
-    self.just_went_down = self.platform
-    self.go_down_timer = 0
     self:reset_platform()
 end
 
 function PlatformBehavior:set_platform(platform)
     if self:is_on_platform() then return end
-    if self.just_went_down == platform and self.go_down_timer < 0.03 then return end
+    if self.just_reset == platform and self.reset_timer < 0.03 then return end
     if not self.owner.controller:set_platform(platform) then return end
 
     self.platform = platform
@@ -53,11 +51,14 @@ function PlatformBehavior:set_platform(platform)
 end
 
 function PlatformBehavior:reset_platform()
+    self.just_reset = self.platform
+    self.reset_timer = 0
+
     self.platform = nil
 end
 
 function PlatformBehavior:update(dt)
-    self.go_down_timer = self.go_down_timer + dt
+    self.reset_timer = self.reset_timer + dt
 
     self:check_collision()
 

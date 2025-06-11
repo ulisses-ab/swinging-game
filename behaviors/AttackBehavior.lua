@@ -57,10 +57,6 @@ end
 function AttackBehavior:attack_enemy(enemy)
     self.attack_timer = 0
 
-    if #self.owner.scene.obj_by_type["Enemy"] - self.owner.scene:count_dead_enemies() == 1 then
-        self.end_animation_timer = 0
-    end
-
     local displacement = self.owner.position:sub(enemy.position)
 
     local length = 100

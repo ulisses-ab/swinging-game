@@ -13,7 +13,7 @@ end
 function EventBus:emit(event, ...)
     if not self.listeners[event] then return end
 
-    for _, callback in ipairs(self.listeners) do
+    for _, callback in ipairs(self.listeners[event]) do
         callback(...)
     end
 end

@@ -2,6 +2,7 @@ local GameObject = require("game_objects.GameObject")
 local util = require("util")
 local Vec2 = require("Vec2")
 local Particle = require("game_objects.Particle")
+local EventBus = require("EventBus")
 
 local Enemy = {}
 Enemy.__index = Enemy
@@ -21,6 +22,10 @@ function Enemy:new(position)
     obj.z = 0.5
     obj.dead_timer = 0
     obj.DEATH_DURATION = 1
+
+    EventBus:listen("PlayerRespawn", function() 
+        obj:respawn()
+    end)
 
     return setmetatable(obj, self)
 end
@@ -69,6 +74,8 @@ end
 
 function Enemy:die()
     self.dead = true
+    
+    EventBus:emit("EnemyDeath", self)
     self.dead_timer = 0
 
     local PARTICLE_NUM = 22

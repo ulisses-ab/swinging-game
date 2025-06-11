@@ -1,15 +1,16 @@
 local gui = require("game_manager.gui.campaign_menu")
-local GameplayState = require("GameplayState")
+local Scene = require("Scene")
+local persistance = require("persistance")
 
-local CampaignMenu = Updater:new()
+local CampaignMenu = Scene:new()
 CampaignMenu.state_machine = nil
 
 function CampaignMenu:init()
     local file_names = love.filesystem.getDirectoryItems("campaign_levels")
 
     local gui_scene = gui({
-        exit = function()
-            self.state_machine.pop()
+        quit = function()
+            self.state_machine:change("StartingMenu")
         end,
         play = function(file)
             self:play_file(file)
@@ -20,7 +21,7 @@ function CampaignMenu:init()
 end
 
 function CampaignMenu:play_file(file)
-    self.state_machine.push(GameplayState, persistance.load_scene("campaign_levels" .. file))
+    self.state_machine:change("Gameplay", persistance.load_scene("campaign_levels/" .. file))
 end
 
 CampaignMenu:init()

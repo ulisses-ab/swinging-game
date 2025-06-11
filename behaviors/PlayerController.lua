@@ -142,10 +142,10 @@ function PlayerController:keypressed(key)
         end
 
         self.can_jump = false
-    elseif key == "q" then
-        print(self.player.velocity:length())
     elseif key == "s" then
         self.player.platform_behavior:try_going_down()
+    elseif key == "r" then
+        self.player:respawn()
     end
 end
 

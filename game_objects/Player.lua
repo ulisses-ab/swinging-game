@@ -7,6 +7,7 @@ local PlatformBehavior = require("behaviors.PlatformBehavior")
 local AttackBehavior = require("behaviors.AttackBehavior")
 local WallBehavior = require("behaviors.WallBehavior")
 local PlayerController = require("behaviors.PlayerController")
+local EventBus = require("EventBus")
 
 local Player = {}
 Player.__index = Player
@@ -102,10 +103,11 @@ end
 function Player:respawn()
     self.position = self.spawn_position
     self.velocity = Vec2:new(0, 0)
-    self.pivot_behavior:reset_near_pivot()
-    self.slingshot_behavior:reset_near_slingshot()
+    self.pivot_behavior:try_detaching()
+    self.slingshot_behavior:try_detaching()
     self.platform_behavior:reset_platform()
     self.attack_behavior:reset()
+    EventBus:emit("PlayerRespawn", self)
 end
 
 function Player:keypressed(key)

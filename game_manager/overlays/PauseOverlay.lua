@@ -2,9 +2,11 @@ local Scene = require("Scene")
 local Vec2 = require("Vec2")
 local gui_generator = require("game_manager.gui.paused")
 local util = require("util")
+local Overlay = require("game_manager.overlays.Overlay")
 
 local PauseOverlay = {}
 PauseOverlay.__index = PauseOverlay
+setmetatable(PauseOverlay, Overlay)
 
 function PauseOverlay:new(wrapped, quit)
     local obj = Overlay:new(wrapped)
@@ -12,11 +14,9 @@ function PauseOverlay:new(wrapped, quit)
     obj.paused = false
     obj.gui = gui_generator({
         continue = function()
-            self:unpause()
+            obj:unpause()
         end,
-        quit = function()
-            self.quit()
-        end
+        quit = quit
     })
 
     return setmetatable(obj, self)
@@ -26,10 +26,10 @@ function PauseOverlay:unpause()
     self.paused = false
 
     if self.wrapped.start_countdown then
-        self.wrapped.start_countdown(3)
+        self.wrapped:start_countdown(3)
     end
 
-    self:add_updatable(self.scene)
+    self:add_updatable(self.wrapped)
     self:remove_updatable(self.gui)
 end
 
@@ -37,16 +37,15 @@ function PauseOverlay:pause()
     self.paused = true
 
     self:add_updatable(self.gui)
-    self:remove_updatable(self.scene)
+    self:remove_updatable(self.wrapped)
 end
 
 function PauseOverlay:draw()
-    self.scene:draw()
+    self.wrapped:draw()
 
-    if self.paused then
-        love.graphics.setColor(0, 0, 0, 0.95)
-        love.graphics.rectangle("fill", -sw/2, -sh/2, sw, sh)
-        love.graphics.setColor(1,1,1,1)
+    if self.paused then 
+        love.graphics.setColor(0, 0, 0, 0.92)
+        util.draw_clear()
         self.gui:draw()
     end
 end
@@ -61,7 +60,7 @@ function PauseOverlay:keypressed(key)
     end
 
     if not self.paused then
-        self.scene:keypressed(key)
+        Overlay.keypressed(self, key)
     end
 end
 
