@@ -37,12 +37,4 @@ function Wall:from_persistance_object(obj)
     )
 end
 
-function Wall:update(dt)
-    GameObject.update(self, dt)
-end
-
-function Wall:draw()
-    GameObject.draw(self)
-end
-
 return Wall

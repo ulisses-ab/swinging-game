@@ -1,5 +1,5 @@
 local PauseOverlay = require("game_manager.overlays.PauseOverlay")
-local editor_mode = require("editor.editor_mode")
+local EditorMode = require("editor.EditorMode")
 local editor_gui = require("game_manager.gui.editor_gui")
 local Platform = require("game_objects.Platform")
 local Pivot = require("game_objects.Pivot")
@@ -13,6 +13,22 @@ local paused = require("game_manager.gui.paused")
 local GameplayOverlay = require("game_manager.overlays.GameplayOverlay")
 local done_editing = require("game_manager.gui.done_editing")
 local persistance = require("persistance")
+
+function EditorMode:move_scene()
+    if not self.scene then return end
+
+    local MOVEMENT_SPEED = 50
+
+    local movement = util.input:read_wasd():normalize():mul(-MOVEMENT_SPEED)
+
+    local camera_scale = self.scene.camera_scale
+
+    local limit_x = 4000
+    local limit_y = 2000
+
+    self.scene.camera_translate.x = math.max(-limit_x, math.min(self.scene.camera_translate.x + movement.x, limit_x))
+    self.scene.camera_translate.y = math.max(-limit_y, math.min(self.scene.camera_translate.y + movement.y, limit_y))
+end
 
 local EditorOverlay = {}
 EditorOverlay.__index = EditorOverlay

@@ -2,24 +2,12 @@ local Button = require("game_objects.Button")
 local TextBox = require("game_objects.TextBox")
 local Scene = require("Scene")
 local Vec2 = require("Vec2")
-local persistance = require("persistance")
 local util = require("util")
 local GameObject = require("game_objects.GameObject")
 
-local my_levels_list = {
-
-}
-
-function my_levels_list:get_scene(actions)
-    local sw, sh = util.get_dimensions()
-
+return function(actions, file_names)
     local scene = Scene:new()
 
-    if not love.filesystem.getInfo("my_levels") then
-        love.filesystem.createDirectory("my_levels")
-    end
-
-    local items = love.filesystem.getDirectoryItems("my_levels")
     local y_start = 0
     local y_offset = 72
 
@@ -28,9 +16,9 @@ function my_levels_list:get_scene(actions)
 
     local share_time = -10
 
-    local quit_button = Button:new(Vec2:new(-350, -150), 60, 60, "←", actions.quit)
-    quit_button.z = 2
-    local add_button = Button:new(Vec2:new(320, -150), 200, 60, "criar", actions.edit_scene)
+    local exit_button = Button:new(Vec2:new(-350, -150), 60, 60, "←", actions.exit)
+    exit_button.z = 2
+    local add_button = Button:new(Vec2:new(320, -150), 200, 60, "criar", actions.create)
     add_button.z = 2
 
     local cover = GameObject:new(Vec2:new(0, -800))
@@ -45,7 +33,7 @@ function my_levels_list:get_scene(actions)
         love.graphics.line(-500, self.position.y + self.height/2, 500, self.position.y + self.height/2)
     end
 
-    scene:add(quit_button)
+    scene:add(exit_button)
     scene:add(add_button)
     scene:add(cover)
 
@@ -98,7 +86,7 @@ function my_levels_list:get_scene(actions)
 
     for i, file in ipairs(items) do
         local button = Button:new(Vec2:new(-300, y_start + (i-1) * y_offset), 950, 60, file, function()
-            actions.play(love.filesystem.read("my_levels/" .. file))
+            actions.play(file)
         end)
 
         local share_button = Button:new(Vec2:new(325, y_start + (i-1) * y_offset), 300, 60, "compartilhar", function()
@@ -108,7 +96,7 @@ function my_levels_list:get_scene(actions)
         end)
 
         local edit_button = Button:new(Vec2:new(325, y_start + (i-1) * y_offset), 300, 60, "compartilhar", function()
-            actions.edit_scene(love.filesystem.read("my_levels/" .. file))
+            actions.edit_scene(file)
         end)
 
         table.insert(level_buttons, button)
@@ -124,5 +112,3 @@ function my_levels_list:get_scene(actions)
 
     return scene
 end
-
-return my_levels_list

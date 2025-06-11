@@ -14,8 +14,6 @@ function AttackBehavior:new(owner)
         ATTACK_DURATION = 0.25,
         attack_start = nil,
         attack_path = nil,
-        end_animation_timer = 20,
-        end_animation_duration = 2.4,
     }
 
     return setmetatable(obj, self)
@@ -23,26 +21,6 @@ end
 
 function AttackBehavior:update(dt)
     self.attack_timer = self.attack_timer + dt
-    self.end_animation_timer = self.end_animation_timer + dt / util.time_rate
-
-    if self.end_animation_timer < self.end_animation_duration then
-        local progress = self.end_animation_timer / self.end_animation_duration
-        local t = progress * progress
-        local MIN_TIME_RATE = 0.001
-        local current_time_rate = util.lerp(MIN_TIME_RATE, util.default_time_rate, t)
-
-        sounds.slash:setPitch(math.max(0.1, t))
-        sounds.slash:setVolume(0.6 + (1 - t) * 0.4)
-
-        util.time_rate = current_time_rate
-
-        local SHAKE_MAGNITUDE = 20
-        util.camera_shake.x = math.random(-1,1) * SHAKE_MAGNITUDE * (1 - progress)
-        util.camera_shake.y = math.random(-1,1) * SHAKE_MAGNITUDE * (1 - progress)
-    else 
-        util.camera_shake.x = 0
-        util.camera_shake.y = 0
-    end
 end
 
 function AttackBehavior:draw()
