@@ -15,12 +15,6 @@ setmetatable(Player, GameObject)
 
 Player.type = "Player"
 
-local main_color = {
-    r = 1,
-    g = 0,
-    b = 1,
-}
-
 local function draw_line(pos1, pos2) 
     love.graphics.setLineWidth(3)
     love.graphics.setColor(main_color.r, main_color.g, main_color.b)
@@ -51,6 +45,8 @@ function Player:new(spawn_position)
     obj.width = 28
     obj.height = 28
 
+    obj.color = {r = 1, g = 0, b = 1, a = 1}
+
     return setmetatable(obj, self)
 end
 
@@ -77,7 +73,7 @@ function Player:center_to_bottom_vec()
 end
 
 function Player:draw() 
-    love.graphics.setColor(main_color.r, main_color.g, main_color.b)
+    love.graphics.setColor(self.color.r, self.color.g, self.color.b, self.color.a or 1)
     GameObject.draw(self)
 
     love.graphics.setColor(1, 1, 1)
