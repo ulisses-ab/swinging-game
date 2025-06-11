@@ -4,7 +4,11 @@ local Scene = require("Scene")
 local Vec2 = require("Vec2")
 local util = require("util")
 
-return function(actions)
+local paused = {
+
+}
+
+function paused:get_scene(actions)
     local sw, sh = util.get_dimensions()
 
     local scene = Scene:new()
@@ -19,3 +23,5 @@ return function(actions)
 
     return scene
 end
+
+return paused

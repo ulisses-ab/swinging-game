@@ -1,68 +1,128 @@
 local Scene = require("Scene")
 local Vec2 = require("Vec2")
-local gui_generator = require("game_manager.gui.paused")
+local persistance = require("persistance")
+local paused = require("game_manager.gui.paused")
 local util = require("util")
 
 local PauseOverlay = {}
 PauseOverlay.__index = PauseOverlay
 
-function PauseOverlay:new(wrapped, quit)
-    local obj = Overlay:new(wrapped)
+PauseOverlay.type = "PauseOverlay"
 
-    obj.paused = false
-    obj.gui = gui_generator({
-        continue = function()
-            self:unpause()
-        end,
-        quit = function()
-            self.quit()
-        end
-    })
+local countdown_font = love.graphics.newFont("assets/fonts/default.ttf", 100)
+
+function PauseOverlay:new(scene, actions, paused_gui)
+    scene.camera_scale = 0.66666
+
+    local obj = {
+        COUNTDOWN_TIME = 3,
+        game_scene = scene,
+        paused = nil,
+        actions = actions,
+        paused_gui = paused_gui,
+    }
+
+    obj.countdown = obj.COUNTDOWN_TIME
 
     return setmetatable(obj, self)
 end
 
-function PauseOverlay:unpause()
-    self.paused = false
-
-    if self.wrapped.start_countdown then
-        self.wrapped.start_countdown(3)
-    end
-
-    self:add_updatable(self.scene)
-    self:remove_updatable(self.gui)
+function PauseOverlay:pause()
+    self.paused = self.paused_gui:get_scene({
+        continue = function()
+            self.paused = nil
+        end,
+        quit = function()
+            self.actions.quit()
+        end
+    })
 end
 
-function PauseOverlay:pause()
-    self.paused = true
+function PauseOverlay:is_paused()
+    return self.paused or self.countdown > 0
+end
 
-    self:add_updatable(self.gui)
-    self:remove_updatable(self.scene)
+function PauseOverlay:update(dt)
+    if self.paused then
+        self.paused:update(dt)
+        return
+    end
+
+    self.countdown = self.countdown - dt / util.time_rate
+    if self.countdown > 0 then
+        return
+    end
+
+    self.game_scene:update(dt)
 end
 
 function PauseOverlay:draw()
-    self.scene:draw()
+    self.game_scene:draw()
+
+    self:draw_pause()
+end
+
+function PauseOverlay:draw_pause()
+    local sw, sh = util.get_dimensions()
 
     if self.paused then
         love.graphics.setColor(0, 0, 0, 0.95)
         love.graphics.rectangle("fill", -sw/2, -sh/2, sw, sh)
         love.graphics.setColor(1,1,1,1)
-        self.gui:draw()
+        self.paused:draw()
+    elseif self.countdown > 0 then
+        love.graphics.setColor(0, 0, 0, 0.2)
+        love.graphics.rectangle("fill", -sw/2, -sh/2, sw, sh)
+        love.graphics.setColor(1,1,1,1)
+        love.graphics.setFont(countdown_font)
+        love.graphics.printf(
+            math.floor(self.countdown)+1,
+            -50,
+            -50,
+            100,
+            "center"
+        )
     end
 end
 
 function PauseOverlay:keypressed(key)
     if key == "escape" then
-        if self.paused then
-            self:unpause()
-        else
-            self:pause()
-        end
+        self:pause()
     end
 
-    if not self.paused then
-        self.scene:keypressed(key)
+    if self:is_paused() then
+        if self.paused then self.paused:keypressed(key) end
+        return 
     end
+
+    self.game_scene:keypressed(key)
+end
+
+function PauseOverlay:keyreleased(key)
+    if self:is_paused() then
+        if self.paused then self.paused:keyreleased(key) end
+        return 
+    end
+
+    self.game_scene:keyreleased(key)
+end
+
+function PauseOverlay:mousepressed(x, y, button, istouch, presses)
+    if self:is_paused() then
+        if self.paused then self.paused:mousepressed(x, y, button, istouch, presses) end
+        return 
+    end
+
+    self.game_scene:mousepressed(x, y, button, istouch, presses)
+end
+
+function PauseOverlay:mousereleased(x, y, button, istouch, presses)
+    if self:is_paused() then
+        if self.paused then self.paused:mousereleased(x, y, button, istouch, presses) end
+        return 
+    end
+
+    self.game_scene:mousereleased(x, y, button, istouch, presses)
 end
 
 return PauseOverlay

@@ -91,7 +91,7 @@ function util.is_obj_in_array(array, object)
     return false
 end  
 
-function util.remove_object_in_array(array, to_remove)
+function util.remove_obj_in_array(array, to_remove)
     for i, obj in ipairs(array) do
         if obj == to_remove then
             table.remove(array, i)
@@ -99,8 +99,6 @@ function util.remove_object_in_array(array, to_remove)
         end
     end
 end
-
-util.remove_obj_in_array = util.remove_object_in_array
 
 function util.set_default_cursor()
     love.mouse.setCursor(love.mouse.getSystemCursor("arrow"))

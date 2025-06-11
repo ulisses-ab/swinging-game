@@ -1,8 +1,9 @@
 local Scene = require("Scene")
 local persistance = require("persistance")
+local editor_mode = require("editor.editor_mode")
 local starting_menu = require("game_manager.gui.starting_menu")
-local campaign_menu = require("game_manager.gui.campaign_menu")
-local my_levels_menu = require("game_manager.gui.my_levels_menu")
+local official_levels_list = require("game_manager.gui.official_levels_list")
+local my_levels_list = require("game_manager.gui.my_levels_list")
 local GameplayOverlay = require("game_manager.overlays.GameplayOverlay")
 local EditorOverlay = require("game_manager.overlays.EditorOverlay")
 local Player = require("game_objects.Player")
@@ -13,17 +14,17 @@ local game_manager = {
 
 local go_to_main_menu, play_scene, edit_scene
 
-local function go_to_campaign_menu()
+local function go_to_official_levels_list()
     game_manager.is_playing = false
-    game_manager.current_scene = campaign_menu({
+    game_manager.current_scene = official_levels_list:get_scene({
         play = play_scene,
         quit = go_to_main_menu,
     })
 end
 
-local function go_to_my_levels_menu()
+local function go_to_my_levels_list()
     game_manager.is_playing = false
-    game_manager.current_scene = my_levels_menu({
+    game_manager.current_scene = my_levels_list:get_scene({
         play = play_scene,
         quit = go_to_main_menu,
         edit_scene = edit_scene,
@@ -34,10 +35,9 @@ go_to_main_menu = function()
     game_manager.is_playing = false
     game_manager.paused = false
     game_manager.countdown = -1
-    game_manager.current_scene = starting_menu({
-        campaign = go_to_campaign_menu,
-        my_levels = go_to_my_levels_menu,
-        quit = love.event.quit
+    game_manager.current_scene = starting_menu:get_scene({
+        start = go_to_official_levels_list,
+        my_levels = go_to_my_levels_list,
     })
 end
 
@@ -64,7 +64,7 @@ edit_scene = function(scene_data)
             play_scene(scene_data)
         end,
         quit = function()
-            go_to_my_levels_menu()
+            go_to_my_levels_list()
         end,
         finished = function()
         end
