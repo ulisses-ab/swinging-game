@@ -217,4 +217,18 @@ function util.draw_clear()
     love.graphics.rectangle("fill", -cover_size/2, -cover_size/2, cover_size, cover_size) 
 end
 
+function util.format_time(time)
+    time = math.ceil(time * 100) / 100
+
+    local minutes = math.floor(time / 60)
+    local seconds = math.floor(time % 60)
+    local centiseconds = math.floor((time * 100) % 100)
+
+    if minutes == 0 then
+        return string.format("%d.%02d", seconds, centiseconds)
+    end
+
+    return string.format("%d:%02d.%02d", minutes, seconds, centiseconds)
+end
+
 return util

@@ -37,4 +37,8 @@ function Wall:from_persistance_object(obj)
     )
 end
 
+function Wall:draw()
+    GameObject.draw(self)
+end
+
 return Wall

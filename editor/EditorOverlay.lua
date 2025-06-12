@@ -15,19 +15,7 @@ local done_editing = require("game_manager.gui.done_editing")
 local persistance = require("persistance")
 
 function EditorMode:move_scene()
-    if not self.scene then return end
 
-    local MOVEMENT_SPEED = 50
-
-    local movement = util.input:read_wasd():normalize():mul(-MOVEMENT_SPEED)
-
-    local camera_scale = self.scene.camera_scale
-
-    local limit_x = 4000
-    local limit_y = 2000
-
-    self.scene.camera_translate.x = math.max(-limit_x, math.min(self.scene.camera_translate.x + movement.x, limit_x))
-    self.scene.camera_translate.y = math.max(-limit_y, math.min(self.scene.camera_translate.y + movement.y, limit_y))
 end
 
 local EditorOverlay = {}

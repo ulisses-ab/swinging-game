@@ -5,7 +5,7 @@ local StateMachine = require("game_manager.StateMachine")
 local StartingMenu = require("game_manager.states.StartingMenu")
 local CampaignMenu = require("game_manager.states.CampaignMenu")
 local MyLevelsMenu = require("game_manager.states.MyLevelsMenu")
-local Gameplay = require("game_manager.states.Gameplay")
+local CampaignGameplay = require("game_manager.states.CampaignGameplay")
 local Scene = require("Scene")
 
 global_line_width = 2
@@ -14,14 +14,20 @@ local game_manager = StateMachine:new()
 game_manager:register("StartingMenu", StartingMenu)
 game_manager:register("CampaignMenu", CampaignMenu)
 game_manager:register("MyLevelsMenu", MyLevelsMenu)
-game_manager:register("Gameplay", Gameplay)
+game_manager:register("CampaignGameplay", CampaignGameplay)
 game_manager:change("StartingMenu")
 
 local scene = Scene:new()
 scene:add(game_manager)
 
+local function toggle_fullscreen()
+    love.window.setFullscreen(not love.window.getFullscreen())
+    canvas = love.graphics.newCanvas()
+end
+
 function love.load()
     love.window.setMode(1280, 720, {resizable=true, vsync=true})
+    toggle_fullscreen()
 
     canvas = love.graphics.newCanvas()
     shader = love.graphics.newShader("assets/shaders/crt.glsl")
@@ -64,11 +70,6 @@ function love.draw()
     love.graphics.setShader()
 end
 
-local function toggle_fullscreen()
-    love.window.setFullscreen(not love.window.getFullscreen())
-    canvas = love.graphics.newCanvas()
-end
-
 function love.keypressed(key)  
     if 
         key == "f11"  or
@@ -76,12 +77,6 @@ function love.keypressed(key)
         (key == "return" and util.input:is_down("lalt"))
     then
         toggle_fullscreen()
-    end
-
-    if key == "t" then
-        util.time_rate = util.time_rate + 0.1
-    elseif key == "g" then
-        util.time_rate = util.time_rate - 0.1
     end
     
     util.input:keypressed(key)

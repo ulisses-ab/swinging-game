@@ -15,16 +15,7 @@ setmetatable(Player, GameObject)
 
 Player.type = "Player"
 
-local function draw_line(pos1, pos2) 
-    love.graphics.setLineWidth(3)
-    love.graphics.setColor(main_color.r, main_color.g, main_color.b)
-    love.graphics.line(
-        pos1.x, pos1.y,
-        pos2.x, pos2.y
-    )
-    love.graphics.setColor(1, 1, 1)
-    love.graphics.setLineWidth(util.global_line_width)
-end
+Player.allow_respawn = true
 
 function Player:new(spawn_position)
     local obj = GameObject:new(spawn_position)
@@ -34,6 +25,8 @@ function Player:new(spawn_position)
     obj.z = 1
 
     obj.acceleration = Vec2:new(0, 4000)
+
+    local function draw_line(...) obj:draw_line(...) end 
 
     obj.pivot_behavior = PivotBehavior:new(obj, draw_line)
     obj.slingshot_behavior = SlingshotBehavior:new(obj, draw_line)
@@ -83,6 +76,17 @@ function Player:draw()
     self.attack_behavior:draw()
 end
 
+function Player:draw_line(pos1, pos2) 
+    love.graphics.setLineWidth(3)
+    love.graphics.setColor(self.color.r, self.color.g, self.color.b, self.color.a or 1)
+    love.graphics.line(
+        pos1.x, pos1.y,
+        pos2.x, pos2.y
+    )
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.setLineWidth(util.global_line_width)
+end
+
 function Player:update(dt)
     GameObject.update(self, dt)
 
@@ -97,6 +101,8 @@ function Player:update(dt)
 end
 
 function Player:respawn()
+    if not Player.allow_respawn then return end
+
     self.position = self.spawn_position
     self.velocity = Vec2:new(0, 0)
     self.pivot_behavior:try_detaching()

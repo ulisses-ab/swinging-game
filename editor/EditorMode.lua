@@ -196,18 +196,4 @@ function EditorMode:keypressed(key)
     self:add_to_base_scene(obj)
 end
 
-function EditorMode:add_to_base_scene(obj)
-    obj.position = self.base_scene.camera_translate:mul(-1)
-
-    if self.base_scene and obj then
-        self.base_scene:add(obj)
-    end
-end
-
-function EditorMode:wheelmoved(x, y)
-    if not self.base_scene then return end
-
-    self.base_scene.camera_scale = math.min(3, math.max(self.base_scene.camera_scale + y * 0.1, 0.15))
-end
-
 return EditorMode

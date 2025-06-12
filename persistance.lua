@@ -4,7 +4,7 @@ local Slingshot = require("game_objects.Slingshot")
 local Platform = require("game_objects.Platform")
 local Enemy = require("game_objects.Enemy")
 local Wall = require("game_objects.Wall")
-local Scene = require("Scene")
+local GameScene = require("GameScene")
 local json = require("lib.dkjson")
 
 local persistance = {}
@@ -26,11 +26,16 @@ local function object_factory(data)
     return object_class:from_persistance_object(data)
 end
 
-function persistance.scene_from_string(string)
-    local scene = Scene:new()
-    
+function persistance.scene_from_string(string)    
     local compressed = love.data.decode("string", "base64", string)
     local json_data = love.data.decompress("string", "zlib", compressed)
+
+    return persistance.scene_from_json(json_data)
+end
+
+function persistance.scene_from_json(json_data)
+    local scene = GameScene:new()
+
     local data = json.decode(json_data)
 
     for _, obj_data in ipairs(data.objects) do
@@ -56,6 +61,11 @@ function persistance.scene_to_string(scene)
     end
 
     local json_data = json.encode(scene_data, { indent = true })
+
+    return persistance.json_to_string(json_data)
+end
+
+function persistance.json_to_string(json_data)
     local compressed = love.data.compress("string", "zlib", json_data)
     local encoded = love.data.encode("string", "base64", compressed)
 

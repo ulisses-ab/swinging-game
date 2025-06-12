@@ -20,26 +20,17 @@ function TimerAndCounterOverlay:new(wrapped, base_scene)
        obj:reset() 
     end)
 
-    EventBus:listen("EnemyDeath", function()
-        obj:on_enemy_death()
-    end)
-
     return setmetatable(obj, self)
-end
-
-function TimerAndCounterOverlay:on_enemy_death()
-    self.dead_counter = self.dead_counter + 1
 end
 
 function TimerAndCounterOverlay:reset()
     self.timer = 0
-    self.dead_counter = 0
 end
 
 function TimerAndCounterOverlay:update(dt)
     Overlay.update(self, dt)
 
-    if self.dead_counter ~= #self.base_scene.obj_by_type["Enemy"] then
+    if self.base_scene:count_live_enemies() > 0 then
         self.timer = self.timer + dt
     end
 end
@@ -52,21 +43,9 @@ function TimerAndCounterOverlay:draw()
     self:draw_counter()
 end
 
-local function format_time(time)
-    local minutes = math.floor(time / 60)
-    local seconds = math.floor(time % 60)
-    local centiseconds = math.floor((time * 100) % 100)
-
-    if minutes == 0 then
-        return string.format("%d.%02d", seconds, centiseconds)
-    end
-
-    return string.format("%d:%02d.%02d", minutes, seconds, centiseconds)
-end
-
 function TimerAndCounterOverlay:draw_timer()
     love.graphics.printf(
-        format_time(self.timer),
+        util.format_time(self.timer),
         -800,
         -320,
         780, --width
@@ -77,13 +56,17 @@ end
 function TimerAndCounterOverlay:draw_counter()
     love.graphics.setColor(1,0,0)
     love.graphics.printf(
-        self.dead_counter .. "/" .. #self.base_scene.obj_by_type["Enemy"],
+        self.base_scene:count_dead_enemies() .. "/" .. self.base_scene:count_enemies(),
         20,
         -320,
         780, --width
         "left"
     )
     love.graphics.setColor(1,1,1)
+end
+
+function TimerAndCounterOverlay:get_time()
+    return self.timer
 end
 
 return TimerAndCounterOverlay

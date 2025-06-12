@@ -29,6 +29,9 @@ function Scene:add(object)
     object.scene = self
 
     table.insert(self.objects, object)
+    table.sort(self.objects, function(a, b)
+        return (a.z or 0) < (b.z or 0)
+    end)
 
     if not object.type then return end
 
@@ -54,6 +57,9 @@ function Scene:remove(object)
     self:remove_updatable(object)
 
     util.remove_obj_in_array(self.objects, object)
+    table.sort(self.objects, function(a, b)
+        return (a.z or 0) < (b.z or 0)
+    end)
 
     if not object.type then return end
 
@@ -73,10 +79,6 @@ function Scene:draw()
     love.graphics.push()
     love.graphics.translate(self.camera_translate.x, self.camera_translate.y)
     love.graphics.scale(self.camera_scale, self.camera_scale)
-
-    table.sort(self.objects, function(a, b)
-        return (a.z or 0) < (b.z or 0)
-    end)
 
     for _, object in ipairs(self.objects) do
         if object.draw then
@@ -128,9 +130,19 @@ function Scene:get_absolute_scale()
 end
 
 function Scene:mousepressed(...)
+    if not self.updates_active then return end
+
     x, y = self:get_mouse_position()
 
-    Updater.mousepressed(self, x, y, ...)
+    table.sort(self.updatables, function(a, b)
+        return (a.z or 0) > (b.z or 0)
+    end)
+
+    for _, object in ipairs(self.updatables) do
+        if object.mousepressed and object:mousepressed(x, y, ...) then
+            return true
+        end
+    end
 end
 
 function Scene:mousereleased(...)

@@ -8,9 +8,10 @@ local PauseOverlay = {}
 PauseOverlay.__index = PauseOverlay
 setmetatable(PauseOverlay, Overlay)
 
-function PauseOverlay:new(wrapped, quit)
+function PauseOverlay:new(wrapped, quit, countdown_overlay)
     local obj = Overlay:new(wrapped)
 
+    obj.countdown_overlay = countdown_overlay
     obj.paused = false
     obj.gui = gui_generator({
         continue = function()
@@ -18,6 +19,7 @@ function PauseOverlay:new(wrapped, quit)
         end,
         quit = quit
     })
+    obj.active = true
 
     return setmetatable(obj, self)
 end
@@ -25,8 +27,8 @@ end
 function PauseOverlay:unpause()
     self.paused = false
 
-    if self.wrapped.start_countdown then
-        self.wrapped:start_countdown(3)
+    if self.countdown_overlay then
+        self.countdown_overlay:start_countdown(3)
     end
 
     self:add_updatable(self.wrapped)
@@ -51,7 +53,7 @@ function PauseOverlay:draw()
 end
 
 function PauseOverlay:keypressed(key)
-    if key == "escape" then
+    if key == "escape" and self.active then
         if self.paused then
             self:unpause()
         else

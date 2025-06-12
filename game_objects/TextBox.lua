@@ -63,13 +63,16 @@ function TextBox:draw()
     local _, lines = self.font:getWrap(self.text, self.width)
     local text_height = #lines * self.font:getHeight()
     
+    local c = self.config.color or {r = 1, g = 1, b = 1}
+    love.graphics.setColor(c.r,c.g, c.b, c.a or 1)
     love.graphics.printf(
         self.text,
         self.position.x  - self.width / 2,
         self.position.y - text_height / 2,
         self.width,
-        "center"
+        self.config.align or "center"
     )
+    love.graphics.setColor(1,1,1,1)
 end
 
 return TextBox

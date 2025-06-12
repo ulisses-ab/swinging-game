@@ -15,7 +15,9 @@ return function(actions)
     scene:add(start_button)
     scene:add(my_levels_button)
     scene:add(exit_button)
-    scene:add(title)
+
+    scene.camera_translate.x = -260
+    scene.camera_translate.y = 0
 
     return scene
 end

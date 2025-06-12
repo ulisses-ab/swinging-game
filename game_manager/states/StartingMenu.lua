@@ -18,6 +18,13 @@ function StartingMenu:init()
     self:add(gui_scene)
 end
 
+local cover = love.graphics.newImage("assets/images/cover.png")
+
+function StartingMenu:draw()
+    love.graphics.draw(cover, -cover:getWidth()/2 + 80, -cover:getHeight()/2 - 40) 
+    Scene.draw(self)
+end
+
 StartingMenu:init()
 
 return StartingMenu

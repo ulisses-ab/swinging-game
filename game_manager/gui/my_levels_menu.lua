@@ -65,7 +65,7 @@ return function(actions, file_names)
         background_color = {
             r = 0, g = 0, b = 0, a = 1
         },
-        borders = true,
+        borders = true
     })
     share_notice.text_size = 20
     share_notice.z = 3

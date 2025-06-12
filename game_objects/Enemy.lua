@@ -34,11 +34,8 @@ function Enemy:from_persistance_object(obj)
     return Enemy:new(Vec2:new(obj.x, obj.y))
 end
 
-function Enemy:frozen_update(dt)
-    self.rotation = self.rotation + self.ROTATION_SPEED * dt
-end
-
 function Enemy:update(dt)
+    self.rotation = self.rotation + self.ROTATION_SPEED * dt
     self.dead_timer = self.dead_timer + dt
     if self.dead then return end
 
@@ -54,7 +51,7 @@ function Enemy:draw()
         love.graphics.setColor(1, 0, 0, 0.5)
         util.draw_ring(self.position.x, self.position.y, t * 5500, math.max(t*5500-100, 0))
 
-        alpha = 0
+        alpha = math.max(0, 1 - 10*t)
     end
 
     local square_size_1 = 4*self.width

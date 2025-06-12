@@ -23,7 +23,7 @@ function CameraMovementOverlay:update(dt)
 end
 
 function CameraMovementOverlay:zoom_based_on_velocity(dt)
-    local player = self.base_scene.obj_by_type["Player"][1]
+    local player = self.base_scene:get_player()
     if not player then return end
 
     local MIN_SCALE = 0.45
@@ -39,7 +39,7 @@ function CameraMovementOverlay:zoom_based_on_velocity(dt)
 end
 
 function CameraMovementOverlay:move_camera_if_player_out_of_bounds(dt)
-    local player = self.base_scene.obj_by_type["Player"][1]
+    local player = self.base_scene:get_player()
     if not player then return end
 
 
