@@ -30,7 +30,7 @@ function GameEndOverlay:new(wrapped, timer_overlay, base_scene, pause_overlay)
 end
 
 function GameEndOverlay:on_game_end(base_scene)
-    if not base_scene == self.base_scene then return end
+    if base_scene ~= self.base_scene then return end
     
     self.timer = 0
     self.game_has_ended = true

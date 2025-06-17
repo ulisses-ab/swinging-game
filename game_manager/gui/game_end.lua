@@ -6,7 +6,7 @@ local util = require("util")
 local GameObject = require("game_objects.GameObject")
 local sounds = require("sounds")
 
-return function(actions, time, star_times)
+return function(actions, time, star_times, best_time)
     local timer = 0
 
     local function make_star(x, y, delay, time_limit, i)
@@ -42,7 +42,7 @@ return function(actions, time, star_times)
             end
         end 
 
-        local star_text = TextBox:new(Vec2:new(x, y + 65), 1000, 200, util.format_time(time_limit), nil, love.graphics.newFont("assets/fonts/default.ttf", 18))
+        local star_text = TextBox:new(Vec2:new(x, y + 65), 1000, 200, util.format_time(time_limit, true), nil, love.graphics.newFont("assets/fonts/default.ttf", 18))
         star_text.draw = function(self)
             if star.is_yellow then
                 self.config.color = star.yellow
@@ -89,6 +89,10 @@ return function(actions, time, star_times)
     scene:add(star2_text)
     scene:add(star3)
     scene:add(star3_text)
+
+    local text = (not best_time or (best_time - time > -0.0002)) and "novo recorde!" or ("melhor tempo: " .. util.format_time(best_time))
+    local best_time_display = TextBox:new(Vec2:new(0, -170), 1000, 200, text, nil, love.graphics.newFont("assets/fonts/default.ttf", 18))
+    scene:add(best_time_display)
 
     return scene
 end

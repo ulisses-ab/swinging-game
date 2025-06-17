@@ -34,18 +34,17 @@ function PlayerController:update(dt)
 end
 
 function PlayerController:apply_input(dt)
-    if self.player.slingshot_behavior:is_attached() then return end
+    --if self.player.slingshot_behavior:is_attached() then return end
 
     local input_direction = util.input:read_wasd()
     local on_platform = self.player.platform_behavior:is_on_platform()
     local on_pivot = self.player.pivot_behavior:is_attached()
-    local pivot_rope_is_extended = self.player.pivot_behavior:is_rope_extended()
 
     if down then
         self.player.platform_behavior:try_going_down()
     end
 
-    if pivot_rope_is_extended then
+    if on_pivot then
         self:apply_rope_input(dt, input_direction)
         return
     end
@@ -112,13 +111,19 @@ function PlayerController:apply_rope_input(dt, input_direction)
         return
     end
 
-    local accel = 3000
+    local accel = 1680
+    local max_speed = 3000
+
+
+    local velocity = self.player.pivot_behavior:get_cartesian_velocity()
+
+    if velocity:length() > max_speed and velocity:dot(input_direction) > 0 then return end
 
     local inward_component = pivot_displacement:dot(input_direction) < 0 and input_direction:project(pivot_displacement) or Vec2:new(0, 0)
 
     input_direction = input_direction:sub(inward_component)
 
-    self.player.velocity = self.player.velocity:add(input_direction:mul(dt*accel))
+    self.player.pivot_behavior:accelerate(input_direction:mul(dt*accel))
 end
 
 function PlayerController:jump()
@@ -145,6 +150,7 @@ function PlayerController:keypressed(key)
     elseif key == "s" then
         self.player.platform_behavior:try_going_down()
     elseif key == "r" then
+        if not self.player.allow_respawn then return end
         self.player:respawn()
     end
 end

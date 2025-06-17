@@ -88,10 +88,8 @@ function persistance.save_scene(scene, filename)
 end
 
 function persistance.save_in_dir(scene, dirname, filename)
-    local string = persistance.scene_to_string(scene)
-
     local base_name = filename
-    local index = 0
+    local index = 0  
 
     local ok = false
     while not ok do
@@ -107,6 +105,8 @@ function persistance.save_in_dir(scene, dirname, filename)
         index = index + 1
     end
 
+    scene.name = filename 
+    local string = persistance.scene_to_string(scene)
     love.filesystem.write(dirname .. "/" .. filename, string)
 
     return string

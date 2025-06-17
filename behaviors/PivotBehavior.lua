@@ -14,7 +14,8 @@ function PivotBehavior:new(owner, draw_line)
         near_pivot = nil,
         attached_pivot = nil,
         attachment_radius = 0,
-        draw_line = draw_line
+        draw_line = draw_line,
+        tangential_velocity = 0,
     }
 
     return setmetatable(obj, self)
@@ -26,6 +27,10 @@ end
 
 function PivotBehavior:set_near_pivot(pivot)
     self.near_pivot = pivot
+
+    if util.input:is_down("space") then
+        self:try_attaching()
+    end
 end
 
 function PivotBehavior:reset_near_pivot()
@@ -33,94 +38,64 @@ function PivotBehavior:reset_near_pivot()
 end
 
 function PivotBehavior:try_attaching()
-    if not self.near_pivot then
+    if not self.near_pivot or self:is_attached() then
         return
     end
 
-    local pivot_displacement = self.owner.position:sub(self.near_pivot.position)
-
-    self.attachment_radius = math.min(pivot_displacement:length(), self.near_pivot.range)
     self.attached_pivot = self.near_pivot
+    self.attachment_radius = math.min(self:displacement():length(), self.near_pivot.range)
 
     attach_sound:stop()
     attach_sound:play()
+
+    self.tangential_velocity = self:get_tangential_velocity()
 end
+
+function PivotBehavior:get_tangential_velocity()
+    return self.owner.velocity:cross(self:displacement():normalize())
+end
+
+function PivotBehavior:displacement()
+    return self.owner.position:sub(self.attached_pivot.position)
+end 
 
 function PivotBehavior:try_detaching()
-    self.attached_pivot = nil
-end
-
-function PivotBehavior:is_rope_extended()
-    if not self:is_attached() then 
-        return false
+    if self:is_attached() then
+        self.owner.velocity = self:get_cartesian_velocity()
     end
 
-    local pivot_displacement = self.owner.position:sub(self.attached_pivot.position)
-    return self.attached_pivot.is_rigid or self.attachment_radius - pivot_displacement:length() < 2
+    self.attached_pivot = nil
 end
 
 function PivotBehavior:update(dt) 
     self:check_collision()
 
-    if not self:is_attached() then
-        return
+    if self:is_attached() then
+        self:update_when_attached(dt)
     end
-
-    local pivot_displacement = self.owner.position:sub(self.attached_pivot.position)
-
-    if not self.attached_pivot.is_rigid and self.attachment_radius - pivot_displacement:length() > 5 then
-        return
-    end
-
-    local inward_velocity_module = self.owner.velocity:dot(pivot_displacement) < 0 and self.owner.velocity:project(pivot_displacement):length() or 0
-    local tangetial_velocity_module = self.owner.velocity:orthogonal_projection(pivot_displacement):length()
-    local pivot_distance = pivot_displacement:length()
-    local correction_module = pivot_distance - self.attachment_radius
-    local correction = pivot_displacement:normalize():mul(-correction_module)
-
-    if self.attached_pivot.is_rigid or inward_velocity_module == 0 then
-        self.owner:move(correction)
-    end
-
-    local new_velocity = self.owner.velocity:orthogonal_projection(pivot_displacement):normalize():mul(tangetial_velocity_module)
-
-    if not self.attached_pivot.is_rigid then
-        new_velocity = new_velocity:add(pivot_displacement:normalize():mul(-inward_velocity_module))
-    end
-
-    self.owner.velocity = new_velocity
 end
 
-function PivotBehavior:accelerate_clockwise(velocity_change)
-    if not self:is_attached() then
-        return
-    end
+function PivotBehavior:update_when_attached(dt)
+    self:accelerate(self.owner.acceleration:mul(dt))
 
-    local pivot_displacement = self.owner.position:sub(self.attached_pivot.position)
+    self.owner.position = self.attached_pivot.position:add(self:displacement():rotate(-self.tangential_velocity * dt / self.attachment_radius))
 
-    self.owner.velocity = self.owner.velocity:add(pivot_displacement:orthogonal():normalize():mul(velocity_change))
+    self:add_damping(dt)
 end
 
-function PivotBehavior:accelerate_counterclockwise(velocity_change)
-    self:accelerate_clockwise(-velocity_change)
+function PivotBehavior:get_cartesian_velocity()
+    return self:displacement():normalize():orthogonal():mul(self.tangential_velocity*-1)
 end
 
-function PivotBehavior:is_above()
-    if not self:is_attached() then
-        return false
-    end
+function PivotBehavior:add_damping(dt)
+    local DAMPING_COEFFICIENT = 0.25
 
-    local pivot_displacement = self.owner.position:sub(self.attached_pivot.position)
-    return pivot_displacement.y < 0
+    self.tangential_velocity = self.tangential_velocity - self.tangential_velocity * DAMPING_COEFFICIENT * dt
 end
 
-function PivotBehavior:is_on_right()
-    if not self:is_attached() then
-        return false
-    end
-
-    local pivot_displacement = self.owner.position:sub(self.attached_pivot.position)
-    return pivot_displacement.x > 0
+function PivotBehavior:accelerate(velocity_change)
+    local change = velocity_change:cross(self:displacement():normalize())
+    self.tangential_velocity = self.tangential_velocity + change
 end
 
 function PivotBehavior:draw()
@@ -135,7 +110,7 @@ function PivotBehavior:check_collision()
     local player = self.owner
 
     for _, pivot in ipairs(player.scene.obj_by_type["Pivot"]) do
-        if util.circular_collision(player.position, pivot.position, pivot.range) then
+        if util.circular_collision(player.position, pivot.position, pivot.range + 10) then
             self:set_near_pivot(pivot)
             return
         end

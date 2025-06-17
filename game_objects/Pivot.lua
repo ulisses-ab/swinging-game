@@ -8,18 +8,21 @@ setmetatable(Pivot, GameObject)
 
 Pivot.type = "Pivot"
 
-function Pivot:new(position, is_rigid, range)
+function Pivot:new(position, range)
     local obj = GameObject:new(position)
 
-    obj.is_rigid = is_rigid or false
     obj.range = range or 200
+
+
+    obj.width = 12
+    obj.height = 12
+
 
     return setmetatable(obj, self)
 end
 
 function Pivot:persistance_object()
     obj = {
-        is_rigid = self.is_rigid,
         range = self.range,
         x = self.position.x,
         y = self.position.y,
@@ -32,7 +35,6 @@ end
 function Pivot:from_persistance_object(obj)
     return Pivot:new(
         Vec2:new(obj.x, obj.y),
-        obj.is_rigid,
         obj.range
     )
 end

@@ -45,6 +45,8 @@ function EnemyDeathFxOverlay:update(dt)
 
     if self.timer > 0 then
         self:update_animation(dt)
+    else
+        sounds.slash:setPitch(1)
     end
 
     Overlay.update(self, dt*self.time_rate)

@@ -5,25 +5,19 @@ local Vec2 = require("Vec2")
 local util = require("util")
 local GameObject = require("game_objects.GameObject")
 
-return function(actions, file_names)
+return function(actions, file_names, scroll)
     local scene = Scene:new()
-
-    local y_start = 0
-    local y_offset = 72
-
-    local level_buttons = {}
-    local share_buttons = {}
-
-    local share_time = -10
 
     local quit_button = Button:new(Vec2:new(-350, -150), 60, 60, "←", actions.quit)
     quit_button.z = 2
-    local add_button = Button:new(Vec2:new(320, -150), 200, 60, "criar", actions.create)
+    local add_button = Button:new(Vec2:new(350, -150), 200, 60, "criar", actions.create)
     add_button.z = 2
+    local import_button = Button:new(Vec2:new(130, -150), 200, 60, "importar", actions.import)
+    import_button.z = 2
 
     local cover = GameObject:new(Vec2:new(0, -800))
     cover.width = 10000
-    cover.height = 1470
+    cover.height = 1420
     cover.z = 1
 
     cover.draw = function(self)
@@ -36,30 +30,9 @@ return function(actions, file_names)
     scene:add(quit_button)
     scene:add(add_button)
     scene:add(cover)
+    scene:add(import_button)
 
-    local function update_level_buttons()
-        for i, button in ipairs(level_buttons) do
-            button.position = Vec2:new(button.position.x, y_start + (i-1) * y_offset)
-        end 
-
-        for i, button in ipairs(share_buttons) do
-            button.position = Vec2:new(button.position.x, y_start + (i-1) * y_offset)
-        end 
-    end
-
-    scene.wheelmoved = function(self, x, y)
-        y_start = y_start + y * 40
-
-        y_start = math.max(-#level_buttons * y_offset, math.min(y_start, 0))
-
-        if y_start < 250 - #level_buttons * y_offset then
-            y_start = math.max(250 - #level_buttons * y_offset)
-        end
-        
-        update_level_buttons()
-    end
-
-    local share_notice = TextBox:new(Vec2:new(0, 250), 800, 80, "nível copiado para a área de transferência", {
+    local share_notice = TextBox:new(Vec2:new(0, 350), 800, 80, "nível copiado para a área de transferência", {
         padding = 30,
         margin = 10,
         background_color = {
@@ -73,40 +46,58 @@ return function(actions, file_names)
     scene:add(share_notice)
 
     local SHARE_NOTICE_TIME = 3
+    local share_timer = -10
 
     scene.update = function(self, dt)
         Scene.update(self, dt)
+        share_timer = share_timer - dt
 
-        if love.timer.getTime() - share_time > SHARE_NOTICE_TIME then
+        if share_timer < 0 then
             share_notice.config.visible = false
         else
             share_notice.config.visible = true
         end
     end
 
+    local scrollable_scene = Scene:new()
+    scrollable_scene.camera_translate.y = scroll or 0
+    local y_offset = 180
+
+    scrollable_scene.wheelmoved = function(self, x, y)
+        local min_translate = math.min(0, -(#file_names-1) * y_offset + 300)
+        self.camera_translate.y = math.min(0, math.max(self.camera_translate.y + y * 40, min_translate))
+    end
+
     for i, file in ipairs(file_names) do
-        local button = Button:new(Vec2:new(-300, y_start + (i-1) * y_offset), 950, 60, file, function()
+        local button = Button:new(Vec2:new(0, (i-1) * y_offset), 900, 60, file, function()
             actions.play(file)
         end)
 
-        local share_button = Button:new(Vec2:new(325, y_start + (i-1) * y_offset), 300, 60, "compartilhar", function()
+        local share_button = Button:new(Vec2:new(300, (i-1) * y_offset + 60), 300, 60, "compartilhar", function()
             love.system.setClipboardText(love.filesystem.read("my_levels/" .. file))
-            share_time = love.timer.getTime()
+            share_timer = love.timer.getTime()
             share_notice.text = "'" .. file .. "' copiado para a área de transferência"
         end)
 
-        local edit_button = Button:new(Vec2:new(325, y_start + (i-1) * y_offset), 300, 60, "compartilhar", function()
-            actions.edit_scene(file)
+        local edit_button = Button:new(Vec2:new(0, (i-1) * y_offset + 60), 300, 60, "editar", function()
+            actions.edit(file)
         end)
 
-        table.insert(level_buttons, button)
-        table.insert(share_buttons, share_button)
+        local delete_button = Button:new(Vec2:new(-300, (i-1) * y_offset + 60), 300, 60, "deletar", function()
+            actions.delete(file)
+        end)
 
-        scene:add(button)
-        --scene:add(share_button)]
-        scene:add(edit_button)
+        scrollable_scene:add(button)
+        scrollable_scene:add(share_button)
+        scrollable_scene:add(edit_button)
+        scrollable_scene:add(delete_button)
+    end
 
-        scene.camera_translate.y = -100
+    scene:add(scrollable_scene)
+    scene.camera_translate.y = -125
+
+    scene.get_scroll = function(self)
+        return scrollable_scene.camera_translate.y
     end
 
 

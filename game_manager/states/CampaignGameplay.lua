@@ -8,6 +8,7 @@ local TimerAndCounterOverlay = require("game_manager.overlays.TimerAndCounterOve
 local CampaignGameEndOverlay = require("game_manager.overlays.CampaignGameEndOverlay")
 local persistance = require("persistance")
 local campaign_util = require("game_manager.campaign_util")
+local Player = require("game_objects.Player")
 
 local CampaignGameplay = Scene:new()
 CampaignGameplay.state_machine = nil
@@ -26,6 +27,8 @@ function CampaignGameplay:enter_state(number)
 
     local scene = campaign_util:load_level(number)
 
+    Player.allow_respawn = true
+
     scene.time_rate = 0.71
     local cam = CameraMovementOverlay:new(scene, scene)
     local tim = TimerAndCounterOverlay:new(cam, scene)
@@ -41,6 +44,8 @@ function CampaignGameplay:enter_state(number)
         self.state_machine:change("CampaignGameplay", number + 1)
     end, campaign_util:get_star_times(number), function(time)
         campaign_util:register_time(number, time)
+    end, function()
+        return campaign_util:get_best_time(number)
     end)
 
     self:add(geo)

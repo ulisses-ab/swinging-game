@@ -81,7 +81,7 @@ function Enemy:die()
         local angle = math.random() * 2 * math.pi
         local velocity = Vec2:new(math.cos(angle), math.sin(angle)):mul(math.random(300, 1500))
         local size = math.random(10, 22)
-        local particle = Particle:new(self.position:copy(), size, velocity, {})
+        local particle = Particle:new(self.position:copy(), size, velocity, {angle = math.random(0, 6.30), rotation_speed = math.random(-5, 5)})
         self.scene:add(particle)
     end
 end

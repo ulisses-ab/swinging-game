@@ -1,6 +1,6 @@
 local Scene = require("Scene")
 local Vec2 = require("Vec2")
-local gui_generator = require("game_manager.gui.paused")
+local gui = require("game_manager.gui.paused")
 local util = require("util")
 local Overlay = require("game_manager.overlays.Overlay")
 
@@ -8,17 +8,17 @@ local PauseOverlay = {}
 PauseOverlay.__index = PauseOverlay
 setmetatable(PauseOverlay, Overlay)
 
-function PauseOverlay:new(wrapped, quit, countdown_overlay)
+function PauseOverlay:new(wrapped, quit, countdown_overlay, text)
     local obj = Overlay:new(wrapped)
 
     obj.countdown_overlay = countdown_overlay
     obj.paused = false
-    obj.gui = gui_generator({
+    obj.gui = gui({
         continue = function()
             obj:unpause()
         end,
         quit = quit
-    })
+    }, text)
     obj.active = true
 
     return setmetatable(obj, self)

@@ -18,6 +18,8 @@ function Slingshot:new(position, strength, up_range, down_range, left_range, rig
     left_range = left_range or 100
     right_range = right_range or 100
 
+    obj.width = 12
+    obj.height = 12
 
     obj.rect_displacement = Vec2:new(-left_range, -up_range)
     obj.rect_size = Vec2:new(left_range+right_range, up_range+down_range)

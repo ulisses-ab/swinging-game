@@ -68,4 +68,17 @@ function campaign_util:get_all_best_times()
     return best_times
 end
 
+function campaign_util:get_amount_of_stars()
+    local count= 0
+
+    for i = 1, #self.level_list do
+        local st = get_star_times(i)
+        local bt = get_best_time(i)
+
+        if st then
+
+        end
+    end
+end
+
 return campaign_util

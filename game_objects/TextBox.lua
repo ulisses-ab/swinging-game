@@ -16,7 +16,8 @@ function TextBox:new(position, width, height, text, config, font)
     obj.height = height
 
     obj.config = config or { }
-    obj.config.visible = true
+    obj.config.visible = obj.config.visible or true
+    obj.config.justify = obj.config.justify or "center"
     obj.text = text
     obj.font = font or love.graphics.newFont("assets/fonts/default.ttf", 24)
 
@@ -55,7 +56,6 @@ function TextBox:draw()
     end
 
     if not utf8.len(self.text) then
-        print(self.text)
         return
     end
 
@@ -68,7 +68,7 @@ function TextBox:draw()
     love.graphics.printf(
         self.text,
         self.position.x  - self.width / 2,
-        self.position.y - text_height / 2,
+        self.position.y - (self.config.justify == "center" and (text_height / 2) or self.height/2),
         self.width,
         self.config.align or "center"
     )

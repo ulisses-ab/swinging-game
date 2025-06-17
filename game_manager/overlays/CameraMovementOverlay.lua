@@ -12,13 +12,16 @@ function CameraMovementOverlay:new(wrapped, base_scene)
 
     obj.base_scene = base_scene
 
+    obj.camera_scale = 0.7
+    obj.camera_translate = base_scene:get_player().position:mul(-obj.camera_scale)
+
     return setmetatable(obj, CameraMovementOverlay)
 end
 
 function CameraMovementOverlay:update(dt)
     Overlay.update(self, dt)
 
-    self:zoom_based_on_velocity(dt)
+    --self:zoom_based_on_velocity(dt)
     self:move_camera_if_player_out_of_bounds(dt)
 end
 
@@ -49,10 +52,10 @@ function CameraMovementOverlay:move_camera_if_player_out_of_bounds(dt)
 
     local CORRECTION_SPEED = 4
 
-    local x_limit = 150
+    local x_limit = 180
     local x_correct = math.max(0, math.abs(absolute_player_pos.x) - x_limit) * util.sign(absolute_player_pos.x) * dt * CORRECTION_SPEED
 
-    local y_limit = 100
+    local y_limit = 160
     local y_correct = math.max(0, math.abs(absolute_player_pos.y) - y_limit) * util.sign(absolute_player_pos.y) * dt * CORRECTION_SPEED
 
 

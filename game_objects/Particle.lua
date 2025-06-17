@@ -10,16 +10,15 @@ Particle.type = "Particle"
 
 function Particle:new(position, size, velocity, config)
     local obj = GameObject:new(position, velocity)
+    config = config or {}
 
-    obj.rotation = 0
-    obj.rotation_speed = config.rotation_speed or 0.8
+    obj.rotation = config.angle or 0
+    obj.rotation_speed = config.rotation_speed or 0
     obj.timer = 0
     obj.z = 0.5
 
     obj.width = size
     obj.height = size
-
-    config = config or {}
 
     obj.lifetime = config.lifetime or 4
     obj.color = config.color or {r = 1, g = 0, b = 0, a = 0.5}

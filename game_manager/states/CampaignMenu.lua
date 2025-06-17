@@ -7,6 +7,12 @@ local CampaignMenu = Scene:new()
 CampaignMenu.state_machine = nil
 
 function CampaignMenu:init()
+
+end   
+
+function CampaignMenu:enter_state()
+    self:remove_all()
+    
     local gui_scene = gui({
         quit = function()
             self.state_machine:change("StartingMenu")
@@ -17,7 +23,7 @@ function CampaignMenu:init()
     }, #campaign_util:get_level_list(), campaign_util:get_all_best_times(), campaign_util:get_all_star_times())
 
     self:add(gui_scene)
-end   
+end
 
 function CampaignMenu:play_number(number)
     self.state_machine:change("CampaignGameplay", number)

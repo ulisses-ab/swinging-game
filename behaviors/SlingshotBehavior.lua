@@ -28,6 +28,10 @@ end
 
 function SlingshotBehavior:set_near_slingshot(slingshot)
     self.near_slingshot = slingshot
+
+    if util.input:is_down("space") then
+        self:try_attaching()
+    end
 end
 
 function SlingshotBehavior:reset_near_slingshot()
@@ -35,13 +39,13 @@ function SlingshotBehavior:reset_near_slingshot()
 end
 
 function SlingshotBehavior:try_attaching()
-    if not self.near_slingshot then
+    if not self.near_slingshot or self:is_attached() then
         return
     end
 
     self.attached_slingshot = self.near_slingshot
     self.owner:disable_acceleration()
-    self.owner.velocity = Vec2:new(0, 0)
+    --self.owner.velocity = Vec2:new(0, 0)
 
     attach_sound:stop()
     attach_sound:play()
@@ -86,7 +90,7 @@ function SlingshotBehavior:check_collision()
     local player = self.owner 
 
     for _, slingshot in ipairs(player.scene.obj_by_type["Slingshot"]) do
-        if util.is_inside_rectangle(player.position, slingshot:rect_position(), slingshot.rect_size) then
+        if util.is_inside_rectangle(player.position, slingshot:rect_position(), slingshot.rect_size, 10) then
             self:set_near_slingshot(slingshot)
             return
         end

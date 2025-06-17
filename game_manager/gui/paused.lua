@@ -4,12 +4,12 @@ local Scene = require("Scene")
 local Vec2 = require("Vec2")
 local util = require("util")
 
-return function(actions)
+return function(actions, text)
     local sw, sh = util.get_dimensions()
 
     local scene = Scene:new()
 
-    local title = TextBox:new(Vec2:new(0, -150), 400, 60, "Pausado")
+    local title = TextBox:new(Vec2:new(0, -150), 800, 60, text or "Pausado")
     local continue_button = Button:new(Vec2:new(0, -50), 400, 60, "Continuar", actions.continue)
     local quit_button = Button:new(Vec2:new(0, 50), 400, 60, "Sair", actions.quit)
 

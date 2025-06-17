@@ -67,4 +67,12 @@ function Vec2:copy()
     return Vec2:new(self.x, self.y)
 end
 
+function Vec2:rotate(angle)
+    local current_angle = self:angle()
+    local new_angle = current_angle + angle
+    local len = self:length()
+
+    return Vec2:new(len*math.cos(new_angle), len*math.sin(new_angle))
+end
+
 return Vec2

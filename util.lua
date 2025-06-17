@@ -1,4 +1,5 @@
 local Vec2 = require("Vec2")
+local utf8 = require("utf8")
 
 local util = {
     scale = 1,
@@ -229,6 +230,16 @@ function util.format_time(time)
     end
 
     return string.format("%d:%02d.%02d", minutes, seconds, centiseconds)
+end
+
+function util.remove_last_character(str)
+    local last = utf8.offset(str, -1)
+
+    if last then
+        return str:sub(1, last - 1)
+    else
+        return ""
+    end
 end
 
 return util

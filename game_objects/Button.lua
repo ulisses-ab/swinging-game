@@ -28,8 +28,10 @@ end
 function Button:update(dt)
     if self:cursor_is_over() and self.enabled then
         util.set_hand_cursor()
+        self.is_hovering = true
     else
         self.is_clicking = false
+        self.is_hovering = false
     end
 end
 
@@ -49,7 +51,7 @@ function Button:draw()
 
     love.graphics.rectangle("line", self.position.x-self.width/2, self.position.y-self.height/2, self.width, self.height)
 
-    if self:cursor_is_over() and self.enabled then
+    if self.is_hovering then
         love.graphics.setColor(c.r, c.g, c.b, (c.a or 1)*0.2)
         love.graphics.rectangle("fill", self.position.x-self.width/2, self.position.y-self.height/2, self.width, self.height)
         love.graphics.setColor(c.r, c.g, c.b, c.a or 1)

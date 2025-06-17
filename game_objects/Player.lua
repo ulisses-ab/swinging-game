@@ -88,21 +88,21 @@ function Player:draw_line(pos1, pos2)
 end
 
 function Player:update(dt)
-    GameObject.update(self, dt)
-
     self.controller:apply_input(dt)
+    self.controller:update(dt)
 
     self.pivot_behavior:update(dt)
+    if self.pivot_behavior:is_attached() then return end
+
+    GameObject.update(self, dt)
+
     self.slingshot_behavior:update(dt)
     self.platform_behavior:update(dt)
     self.attack_behavior:update(dt)
-    self.controller:update(dt)
     self.wall_behavior:update(dt)
 end
 
 function Player:respawn()
-    if not Player.allow_respawn then return end
-
     self.position = self.spawn_position
     self.velocity = Vec2:new(0, 0)
     self.pivot_behavior:try_detaching()
@@ -110,6 +110,10 @@ function Player:respawn()
     self.platform_behavior:reset_platform()
     self.attack_behavior:reset()
     EventBus:emit("PlayerRespawn", self)
+end
+
+function Player:set_spawn()
+    self.spawn_position = self.position
 end
 
 function Player:keypressed(key)
