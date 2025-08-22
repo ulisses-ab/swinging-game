@@ -69,16 +69,30 @@ function campaign_util:get_all_best_times()
 end
 
 function campaign_util:get_amount_of_stars()
-    local count= 0
+    local count = 0
 
     for i = 1, #self.level_list do
-        local st = get_star_times(i)
-        local bt = get_best_time(i)
+        local st = self:get_star_times(i)
+        local bt = self:get_best_time(i)
 
-        if st then
-
+        if st and bt then
+            for _, time in ipairs(st) do
+                print(time, bt)
+                if time > bt then
+                    count = count + 1
+                end 
+            end
         end
     end
+
+    return count
+end
+
+function campaign_util:get_threshold(number)
+    local level = self.level_list[number]
+    local str = love.filesystem.read("campaign_thresholds/"..level)
+
+    return str and tonumber(str) or nil
 end
 
 return campaign_util

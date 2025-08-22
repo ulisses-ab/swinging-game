@@ -22,7 +22,7 @@ function MyLevelsGameplay:enter_state(level_name)
 
     local scene = my_levels_util:load_level(level_name)
 
-    Player.allow_respawn = true
+    scene.allow_respawn = true
 
     scene.time_rate = 0.71
     local cam = CameraMovementOverlay:new(scene, scene)

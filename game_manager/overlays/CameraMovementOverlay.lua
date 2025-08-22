@@ -38,7 +38,9 @@ function CameraMovementOverlay:zoom_based_on_velocity(dt)
 
     local target_scale = math.min(MAX_SCALE, math.max(target_scale, MIN_SCALE))
 
+    --local pre_translate = self.camera_translate:div(self.camera_scale)
     self.camera_scale = self.camera_scale + (target_scale - self.camera_scale) * ZOOMING_VELOCITY * dt
+    --self.camera_translate = pre_translate:mul(self.camera_scale)
 end
 
 function CameraMovementOverlay:move_camera_if_player_out_of_bounds(dt)
@@ -50,7 +52,7 @@ function CameraMovementOverlay:move_camera_if_player_out_of_bounds(dt)
     local absolute_scale = self.base_scene:get_absolute_scale()
     local absolute_player_pos = absolute_translate:add(player.position:mul(absolute_scale))
 
-    local CORRECTION_SPEED = 4
+    local CORRECTION_SPEED = 3
 
     local x_limit = 180
     local x_correct = math.max(0, math.abs(absolute_player_pos.x) - x_limit) * util.sign(absolute_player_pos.x) * dt * CORRECTION_SPEED

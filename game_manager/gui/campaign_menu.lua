@@ -4,9 +4,12 @@ local Scene = require("Scene")
 local Vec2 = require("Vec2")
 local util = require("util")
 local GameObject = require("game_objects.GameObject")
+local campaign_util = require("game_manager.campaign_util")
 
 return function(actions, number, best_times, star_times)
-    local function make_star(x, y, star_time, best_time)
+    local total_stars = campaign_util:get_amount_of_stars()
+
+    local function make_star(x, y, star_time, best_time, size)
         local star = GameObject:new(Vec2:new(x, y))
 
         if best_time then 
@@ -19,7 +22,7 @@ return function(actions, number, best_times, star_times)
             love.graphics.setBlendMode("add")
             local c = self.is_yellow and {r = 0.82, g = 0.70, b = 0.0, a = 1} or {r = 0.7, g = 0.7, b = 0.7, a = 0.5}
             love.graphics.setColor(c.r, c.g, c.b, c.a or 1)
-            util.draw_star("fill", self.position.x, self.position.y, 25)
+            util.draw_star("fill", self.position.x, self.position.y, size or 25)
             love.graphics.setColor(1,1,1,1)
             love.graphics.setBlendMode("alpha")
         end
@@ -39,9 +42,16 @@ return function(actions, number, best_times, star_times)
         end, love.graphics.newFont("assets/fonts/default.ttf", 32))
 
         button.enabled = i == 1 or best_times[i-1] ~= nil
-        if not button.enabled then
-            button.config.color = {r=1,g=1,b=1,a=0.5}
+        local threshold = campaign_util:get_threshold(i)
+        if threshold and total_stars < threshold then
+            button.enabled = false
+
+            local threshold_text = TextBox:new(Vec2:new(250, y), 1500, 50, "desbloqueado com " .. threshold .. " estrelas", 
+            {align = "center"}, love.graphics.newFont("assets/fonts/default.ttf", 20))
+
+            scene:add(threshold_text)
         end
+
 
         scene:add(button)
 
@@ -72,8 +82,15 @@ return function(actions, number, best_times, star_times)
     local outer_scene = Scene:new()
     outer_scene:add(scene)
 
-    local exit_button = Button:new(Vec2:new(-400, -150), 60, 60, "←", actions.quit)
+    local exit_button = Button:new(Vec2:new(-400, -210), 60, 60, "←", actions.quit)
     outer_scene:add(exit_button)
+
+    local stars_display = TextBox:new(Vec2:new(-400, 50), 1000, 60, "x"..total_stars, {
+        background_color = {r = 0, g = 0, b = 0, a = 0}
+    }, love.graphics.newFont("assets/fonts/default.ttf", 35))
+    stars_display.z = 2
+    outer_scene:add(stars_display)
+    outer_scene:add(make_star(-400, 0, 10, 0, 45))
 
     return outer_scene
 end

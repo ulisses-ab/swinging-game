@@ -27,7 +27,7 @@ function Editor:enter_state(scene, name)
         scene:add(Player:new(Vec2:new(0, 0)))
     end
 
-    self:clear_non_persistent_objects(scene)
+    self:clear_irrelevant_objects(scene)
 
     scene:get_player():respawn()
     scene.updates_active = false
@@ -48,6 +48,7 @@ function Editor:enter_state(scene, name)
         self.state_machine:change("MyLevelsMenu")
     end, nil, "Deseja sair sem salvar?")
     done = DoneEditingOverlay:new(pause, name, function(chosen_name, substitute)
+        if chosen_name == "" then return end
         my_levels_util:save_scene(scene, chosen_name, substitute)
 
         self.state_machine:change("MyLevelsMenu")
@@ -56,16 +57,16 @@ function Editor:enter_state(scene, name)
     self:add(done)
 end
 
-function Editor:clear_non_persistent_objects(scene)
-    local non_persistent = {}
+function Editor:clear_irrelevant_objects(scene)
+    local irrelevant = {}
 
     for _, obj in ipairs(scene.objects) do
-        if not obj.persistance_object then
-            table.insert(non_persistent, obj)
+        if obj.type == "Particle" then
+            table.insert(irrelevant, obj)
         end
     end
 
-    for _, obj in ipairs(non_persistent) do
+    for _, obj in ipairs(irrelevant) do
         scene:remove(obj)
     end
 end

@@ -59,35 +59,49 @@ return function(actions, file_names, scroll)
         end
     end
 
+    local starting_scroll = 25
     local scrollable_scene = Scene:new()
-    scrollable_scene.camera_translate.y = scroll or 0
-    local y_offset = 180
+    scrollable_scene.camera_translate.y = scroll or starting_scroll
+    local y_offset = 280
 
     scrollable_scene.wheelmoved = function(self, x, y)
-        local min_translate = math.min(0, -(#file_names-1) * y_offset + 300)
-        self.camera_translate.y = math.min(0, math.max(self.camera_translate.y + y * 40, min_translate))
+        local min_translate = math.min(starting_scroll, -(#file_names-1) * y_offset + 300)
+        self.camera_translate.y = math.min(starting_scroll, math.max(self.camera_translate.y + y * 40, min_translate))
     end
 
     for i, file in ipairs(file_names) do
-        local button = Button:new(Vec2:new(0, (i-1) * y_offset), 900, 60, file, function()
+        local button = Button:new(Vec2:new(0, (i-1) * y_offset), 900, 150, "", function()
             actions.play(file)
         end)
+        scrollable_scene:add(button)
 
-        local share_button = Button:new(Vec2:new(300, (i-1) * y_offset + 60), 300, 60, "compartilhar", function()
+        local name = TextBox:new(Vec2:new(-150, (i-1) * y_offset), 500, 150, file, {align = "left"})
+        name.z = 1
+        scrollable_scene:add(name)
+
+        local best = love.filesystem.read("my_levels_best/" .. file)
+        if best then
+            best = tonumber(best)
+        end
+
+        local time_box = TextBox:new(Vec2:new(0, (i-1) * y_offset), 800, 150, best and util.format_time(best) or "--:--", {align = "right"})
+        time_box.z = 1
+        scrollable_scene:add(time_box)
+
+        local share_button = Button:new(Vec2:new(300, (i-1) * y_offset + 105), 300, 60, "compartilhar", function()
             love.system.setClipboardText(love.filesystem.read("my_levels/" .. file))
-            share_timer = love.timer.getTime()
+            share_timer = SHARE_NOTICE_TIME
             share_notice.text = "'" .. file .. "' copiado para a área de transferência"
         end)
 
-        local edit_button = Button:new(Vec2:new(0, (i-1) * y_offset + 60), 300, 60, "editar", function()
+        local edit_button = Button:new(Vec2:new(0, (i-1) * y_offset + 105), 300, 60, "editar", function()
             actions.edit(file)
         end)
 
-        local delete_button = Button:new(Vec2:new(-300, (i-1) * y_offset + 60), 300, 60, "deletar", function()
+        local delete_button = Button:new(Vec2:new(-300, (i-1) * y_offset + 105), 300, 60, "deletar", function()
             actions.delete(file)
         end)
 
-        scrollable_scene:add(button)
         scrollable_scene:add(share_button)
         scrollable_scene:add(edit_button)
         scrollable_scene:add(delete_button)

@@ -9,7 +9,7 @@ return function(actions)
     local scene = Scene:new()
 
     local platform_button = Button:new(Vec2:new(200, 290), 330, 60, "plataforma", function() actions.add("Platform") end)
-    local pivot_button = Button:new(Vec2:new(0, 390), 330, 60, "pivô", function() actions.add("Pivot") end)
+    local pivot_button = Button:new(Vec2:new(0, 390), 330, 60, "balanço", function() actions.add("Pivot") end)
     local slingshot_button = Button:new(Vec2:new(400, 390), 330, 60, "estilingue", function() actions.add("Slingshot") end)
     local wall_button = Button:new(Vec2:new(-200, 290), 330, 60, "parede", function() actions.add("Wall") end)
     local enemy_button = Button:new(Vec2:new(-400, 390), 330, 60, "inimigo", function() actions.add("Enemy") end)
@@ -26,5 +26,5 @@ return function(actions)
     scene:add(done_button)
     scene.camera_scale = 0.75
 
-    return scene
+    return scene, done_button
 end

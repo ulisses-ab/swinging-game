@@ -21,13 +21,13 @@ end
 function Playtest:enter_state(scene)
     self:remove_all()
 
-    Player.allow_respawn = true
+    scene.allow_respawn = true
     scene.time_rate = 0.71
     scene.updates_active = true
     
     local cam = CameraMovementOverlay:new(scene, scene)
     local tim = TimerAndCounterOverlay:new(cam, scene)
-    local efx = EnemyDeathFxOverlay:new(tim, scene)
+    local efx = EnemyDeathFxOverlay:new(tim, scene, false)
     local quit = Overlay:new(efx)
 
     quit.keypressed = function(_, key)

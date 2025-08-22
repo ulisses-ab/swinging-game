@@ -150,7 +150,7 @@ function PlayerController:keypressed(key)
     elseif key == "s" then
         self.player.platform_behavior:try_going_down()
     elseif key == "r" then
-        if not self.player.allow_respawn then return end
+        if not self.player.scene.allow_respawn then return end
         self.player:respawn()
     end
 end

@@ -106,11 +106,10 @@ function SelectionOverlay:get_area_select_box()
 end
 
 function SelectionOverlay:draw()
+    Overlay.draw(self)
     self:draw_area_select_rectangle()
 
     self:draw_frames()
-
-    Overlay.draw(self)
 end
 
 function SelectionOverlay:draw_frames()

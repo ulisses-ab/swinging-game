@@ -33,6 +33,7 @@ function PlatformBehavior:try_going_down()
 end
 
 function PlatformBehavior:set_platform(platform)
+    print("sp")
     if self:is_on_platform() then return end
     if self.just_reset == platform and self.reset_timer < 0.03 then return end
     if not self.owner.controller:set_platform(platform) then return end

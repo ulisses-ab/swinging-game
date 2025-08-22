@@ -2,7 +2,7 @@ local Overlay = require("game_manager.overlays.Overlay")
 local Scene = require("Scene")
 local util = require("util")
 local Vec2 = require("Vec2")
-local gui = require("Editor.gui.editing")
+local gui = require("editor.gui.editing")
 local Player = require("game_objects.Player")
 local Pivot = require("game_objects.Pivot")
 local Slingshot = require("game_objects.Slingshot")
@@ -19,7 +19,7 @@ function GuiOverlay:new(wrapped, base_scene, play, done)
 
     obj.base_scene = base_scene
 
-    obj.gui = gui({
+    local gui, done_button = gui({
         add = function(obj_type)
             obj:add_to_base_scene(obj_type)
         end,
@@ -27,10 +27,22 @@ function GuiOverlay:new(wrapped, base_scene, play, done)
         done = done,
     })
 
+    obj.gui = gui
+    obj.done_button = done_button
     obj.gui.z = 1
     obj:add(obj.gui)
 
     return setmetatable(obj, GuiOverlay)
+end
+
+function GuiOverlay:update(dt)
+    Overlay.update(self, dt)
+
+    if #self.base_scene.obj_by_type["Enemy"] == 0 then
+        self.done_button.enabled = false
+    else
+        self.done_button.enabled = true
+    end
 end
 
 function GuiOverlay:add_to_base_scene(obj_type)

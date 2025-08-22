@@ -8,12 +8,13 @@ local EnemyDeathFxOverlay = {}
 EnemyDeathFxOverlay.__index = EnemyDeathFxOverlay
 setmetatable(EnemyDeathFxOverlay, Overlay)
 
-function EnemyDeathFxOverlay:new(wrapped, base_scene)
+function EnemyDeathFxOverlay:new(wrapped, base_scene, slow_enabled)
     local obj = Overlay:new(wrapped)
 
     obj.base_scene = base_scene
     obj.duration = 2.4
     obj.timer = 0
+    obj.slow_enabled = slow_enabled == nil and true or slow_enabled
 
     EventBus:listen("EnemyDeath", function(...)
         obj:on_enemy_death(...)
@@ -75,6 +76,7 @@ function EnemyDeathFxOverlay:update_animation(dt)
 end
 
 function EnemyDeathFxOverlay:on_last_enemy_death(enemy)
+    if not self.slow_enabled then return end
     self.timer = self.duration
 end
 

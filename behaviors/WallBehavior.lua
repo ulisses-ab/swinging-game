@@ -50,10 +50,14 @@ function WallBehavior:update(dt)
 
         if not self:is_outside(wall, owner:next_position(dt)) then
             if self:is_x_outside(wall, owner.position.x) then
+                displacement.x = util.sign(displacement.x) * (wall.width / 2 + owner.width / 2)
                 owner.velocity.x = 0
             else
+                displacement.y = util.sign(displacement.y) * (wall.height / 2 + owner.height / 2)
                 owner.velocity.y = 0
             end
+            
+            owner.position = wall.position:add(displacement)
         end
     end
 end

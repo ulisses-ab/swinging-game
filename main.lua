@@ -1,3 +1,6 @@
+local init_files = require("init_files")
+init_files()
+
 local util = require("util")
 local sounds = require("sounds")
 local Vec2 = require("Vec2")

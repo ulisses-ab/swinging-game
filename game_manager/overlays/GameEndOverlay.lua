@@ -35,7 +35,7 @@ function GameEndOverlay:on_game_end(base_scene)
     self.timer = 0
     self.game_has_ended = true
 
-    Player.allow_respawn = false
+    self.base_scene.allow_respawn = false
 
     if self.pause_overlay then
         self.pause_overlay.active = false
@@ -79,7 +79,7 @@ function GameEndOverlay:restart()
     self:add_updatable(self.wrapped)
     self:remove_updatable(self.gui)
 
-    Player.allow_respawn = true
+    self.base_scene.allow_respawn = true
     self.base_scene:get_player():respawn()
 
     if self.pause_overlay then

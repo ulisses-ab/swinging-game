@@ -44,6 +44,10 @@ function Button:draw()
     local margin = self.config.margin or 0
     local c = self.config.color or {r = 1, g = 1, b = 1, a = 1}
 
+    if not self.enabled then 
+        c.a = c.a * 0.5
+    end
+
     love.graphics.setColor(0, 0, 0, 0.3)
     love.graphics.rectangle("fill", self.position.x-self.width/2-margin, self.position.y-self.height/2-margin, self.width+2*margin, self.height+2*margin)
     love.graphics.setColor(c.r, c.g, c.b, c.a or 1)
@@ -66,7 +70,7 @@ function Button:draw()
         self.position.x  - self.width / 2,
         self.position.y - text_height / 2,
         self.width,
-        "center"
+        self.config.align or "center"
     )
 end
 

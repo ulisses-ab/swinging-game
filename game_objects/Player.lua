@@ -8,14 +8,14 @@ local AttackBehavior = require("behaviors.AttackBehavior")
 local WallBehavior = require("behaviors.WallBehavior")
 local PlayerController = require("behaviors.PlayerController")
 local EventBus = require("EventBus")
+local sounds = require("sounds")
+local Particle = require("game_objects.Particle")
 
 local Player = {}
 Player.__index = Player
 setmetatable(Player, GameObject)
 
 Player.type = "Player"
-
-Player.allow_respawn = true
 
 function Player:new(spawn_position)
     local obj = GameObject:new(spawn_position)
@@ -96,10 +96,12 @@ function Player:update(dt)
 
     GameObject.update(self, dt)
 
+    self.wall_behavior:update(dt)
     self.slingshot_behavior:update(dt)
     self.platform_behavior:update(dt)
     self.attack_behavior:update(dt)
-    self.wall_behavior:update(dt)
+
+    self:detect_fall_damage()
 end
 
 function Player:respawn()
@@ -148,6 +150,32 @@ end
 
 function Player:reset_platform()
     self.platform_behavior:reset_platform()
+end
+
+function Player:detect_fall_damage()
+    local lowest_point = self.scene:lowest_point()
+
+    if self.position.y > lowest_point + 1500 and self.scene.allow_respawn then
+        sounds.death:play()
+        self:generate_death_particles()
+        self:respawn()
+    end
+end
+
+function Player:generate_death_particles()
+    local PARTICLE_NUM = 85
+
+    for i = 1, PARTICLE_NUM do
+        local angle = (0.4*math.random()+1.3) * math.pi 
+        local velocity = Vec2:new(math.cos(angle), math.sin(angle)):mul(math.random(3000, 15000))
+        local size = math.random(8, 15)
+        local particle = Particle:new(self.position:copy(), size, velocity, {
+            angle = math.random(0, 6.30), 
+            rotation_speed = math.random(-5, 5),
+            color = self.color
+        })
+        self.scene:add(particle)
+    end
 end
 
 return Player

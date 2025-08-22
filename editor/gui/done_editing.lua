@@ -26,6 +26,10 @@ return function(actions, default_name)
     title.text = default_name or ""
 
     local input_reader = InputReader:new(function(t)
+        if t:match("[<>:\"/\\|?*]") then
+            return
+        end
+
         if not utf8.len(t) then return end
         if #title.text >= 40 then return end
         title.text = title.text .. t

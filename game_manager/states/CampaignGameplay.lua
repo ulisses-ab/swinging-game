@@ -18,7 +18,7 @@ function CampaignGameplay:init()
 end
 
 function CampaignGameplay:enter_state(number)
-    if number > #campaign_util:get_level_list() then
+    if number > #campaign_util:get_level_list() or not self:threshold_is_met(number) then
         self.state_machine:change("CampaignMenu")
         return
     end
@@ -27,7 +27,7 @@ function CampaignGameplay:enter_state(number)
 
     local scene = campaign_util:load_level(number)
 
-    Player.allow_respawn = true
+    scene.allow_respawn = true
 
     scene.time_rate = 0.71
     local cam = CameraMovementOverlay:new(scene, scene)
@@ -49,6 +49,13 @@ function CampaignGameplay:enter_state(number)
     end)
 
     self:add(geo)
+end
+
+function CampaignGameplay:threshold_is_met(number)
+    local t = campaign_util:get_threshold(number)
+    if t == nil then return true end
+
+    return campaign_util:get_amount_of_stars() >= t
 end
 
 CampaignGameplay:init()

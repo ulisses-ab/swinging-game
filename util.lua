@@ -242,4 +242,8 @@ function util.remove_last_character(str)
     end
 end
 
+function util.check_if_filename_is_valid()
+
+end
+
 return util
